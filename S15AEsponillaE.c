@@ -20,6 +20,17 @@ int main()
 
 void Menu()
 {
+    system("cls");
+    FILE *titlePtr;
+    titlePtr = fopen("StylisticTexts/title.txt", "r"); // open file that contains the ascii art for the title
+    char c;
+    do
+    {
+        c = fgetc(titlePtr); // print each character from the file
+        printf("%c", c);
+    } while (c != EOF);
+    printf("\n");
+
     // Display the options in the main menu
     int i, nSelected = -1;
     Str10 sOptions[3] = {"Manage Data", "Play", "Exit"};
@@ -62,7 +73,7 @@ void Menu()
 void ManageData()
 {
     Str10 password;
-    int i = 0, nAttempts = 2;
+    int i = 0, nAttempts = 2, bGoToMenu = 0;
     char ch;
     system("cls");
 
@@ -87,7 +98,9 @@ void ManageData()
             {
                 nAttempts--; // else try again
                 printf("\nIncorrect Password, %d tries remaining\n", nAttempts + 1);
+                printf("Press ESC to go back to Main Menu\n");
                 printf("Enter password: ");
+
                 i = 0;
             }
         }
@@ -104,12 +117,31 @@ void ManageData()
             printf("*"); // Display asterisk
             password[i++] = ch;
         }
+
+        if ((int)ch == 27)
+        {
+            bGoToMenu = 1; // if user pressed ESC then break out of the loop and make the boolean var true
+            break;
+        }
     }
 
     if (strcmp(password, PASSWORD) == 0)
     {
         system("cls");
         printf("\nLogged in Succesflly\n");
+
+        FILE *titlePtr = fopen("StylisticTexts/manageData.txt", "r");
+        char c;
+        while (c != EOF)
+        {
+            c = getc(titlePtr); // print Manage Data in the ascii art text
+            printf("%c", c);
+        }
+    }
+
+    if (bGoToMenu)
+    {
+        Menu();
     }
 }
 void Play()
