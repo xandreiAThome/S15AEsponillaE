@@ -8,9 +8,13 @@
 // TODO
 // Start on the Manage Data feature
 
-void ManageData();
+void ManageDataLogin();
 void Play();
 void Menu();
+void ManageDataMenu();
+int DisplayOptions(Str20 sOptions[], int size);
+
+struct recordsTag Data[100];
 
 int main()
 {
@@ -31,34 +35,14 @@ void Menu()
     } while (c != EOF);
     printf("\n");
 
-    // Display the options in the main menu
-    int i, nSelected = -1;
-    Str10 sOptions[3] = {"Manage Data", "Play", "Exit"};
-    for (i = 0; i < 3; i++)
-    {
-        printf("%d - %s\n", i, sOptions[i]);
-    }
-
-    printf("Choose Option: ");
-    scanf("%d", &nSelected);
-    // prompts the user again if the input is invalid
-    if (nSelected != 0 && nSelected != 1 && nSelected != 2)
-        while (1)
-        {
-            if (nSelected == 0 || nSelected == 1 || nSelected == 2)
-            {
-                break;
-            }
-            printf("Invalid Option Choose Again: ");
-            scanf("%d", &nSelected);
-            fflush(stdin);
-        }
+    Str20 sOptions[3] = {"Manage Data", "Play", "Exit"};
 
     // switch cases for the option the user inputted
-    switch (nSelected)
+
+    switch (DisplayOptions(sOptions, 3))
     {
     case 0:
-        ManageData();
+        ManageDataLogin();
         break;
     case 1:
         Play();
@@ -68,9 +52,11 @@ void Menu()
         printf("Exited the Game");
         break;
     }
+
+    fclose(titlePtr);
 }
 
-void ManageData()
+void ManageDataLogin()
 {
     Str10 password;
     int i = 0, nAttempts = 2, bGoToMenu = 0;
@@ -137,6 +123,9 @@ void ManageData()
             c = getc(titlePtr); // print Manage Data in the ascii art text
             printf("%c", c);
         }
+        printf("\n");
+        fclose(titlePtr);
+        ManageDataMenu();
     }
 
     if (bGoToMenu)
@@ -144,8 +133,60 @@ void ManageData()
         Menu();
     }
 }
+
+void ManageDataMenu()
+{
+    Str20 sOptions[6] = {"Add a Record",
+                         "Edit a Record",
+                         "Delete a Record",
+                         "Import Data",
+                         "Export Data",
+                         "Go to Main Menu"};
+
+    switch (DisplayOptions(sOptions, 6))
+    {
+    case 5:
+        Menu();
+        break;
+
+    default:
+        break;
+    }
+}
+
 void Play()
 {
 
     return;
+}
+
+/*
+@param sOptions: the array of strings of the available options
+@param size: the size of the array
+@return returns the index that was chosen
+*/
+int DisplayOptions(Str20 sOptions[], int size)
+{
+    int nSelected = -1, i;
+    for (i = 0; i < size; i++) // Display the options in the main menu
+    {
+        printf("%d - %s\n", i, sOptions[i]);
+    }
+
+    printf("Choose Option: ");
+    scanf("%d", &nSelected);
+    // prompts the user again if the input is invalid
+    if (nSelected < 0 || nSelected > (size - 1))
+        while (1)
+        {
+            if (nSelected >= 0 && nSelected <= size - 1)
+            {
+                return nSelected; // returns the chosen option
+            }
+            printf("Invalid Option Choose Again: ");
+            scanf("%d", &nSelected);
+            fflush(stdin);
+        }
+
+    return nSelected; // if the first input is valid then return it
 }
