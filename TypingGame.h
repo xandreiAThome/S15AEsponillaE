@@ -1,3 +1,6 @@
+#ifndef TYPINGGAME_H_
+#define TYPINGGAME_H_
+
 #define PASSWORD "HelloWorld"
 
 typedef char Str10[11];
@@ -10,3 +13,5 @@ struct recordsTag
     int nNumOfChars;
     Str100 sPhrase;
 };
+
+#endif
