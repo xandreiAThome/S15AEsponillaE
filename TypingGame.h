@@ -1,7 +1,7 @@
 #ifndef TYPINGGAME_H_
 #define TYPINGGAME_H_
 
-#define PASSWORD "HelloWorld"
+#define PASSWORD "hi"
 
 typedef char Str10[11];
 typedef char Str100[101];
