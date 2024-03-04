@@ -2,6 +2,23 @@
 #include "TypingGame.h"
 
 /*
+@param filename: The name of the textFile that contains the ascii art
+*/
+void DisplayAsciiArt(char fileName[])
+{
+    FILE *ptr;
+    ptr = fopen(fileName, "r"); // open file that contains the ascii art for the title
+    char c;
+    do
+    {
+        c = fgetc(ptr); // print each character from the file
+        printf("%c", c);
+    } while (c != EOF); // until it reaches the end of the file
+    printf("\n");
+    fclose(ptr);
+}
+
+/*
 @param sOptions: the array of strings of the available options
 @param size: the size of the array
 @return returns the index that was chosen

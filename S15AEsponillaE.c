@@ -25,15 +25,7 @@ int main()
 void MainMenu()
 {
     system("cls");
-    FILE *titlePtr;
-    titlePtr = fopen("StylisticTexts/title.txt", "r"); // open file that contains the ascii art for the title
-    char c;
-    do
-    {
-        c = fgetc(titlePtr); // print each character from the file
-        printf("%c", c);
-    } while (c != EOF);
-    printf("\n");
+    DisplayAsciiArt("StylisticTexts/title.txt");
 
     Str20 sOptions[3] = {"Manage Data", "Play", "Exit"};
 
@@ -52,8 +44,6 @@ void MainMenu()
         printf("Exited the Game");
         break;
     }
-
-    fclose(titlePtr);
 }
 
 void ManageDataLogin()
@@ -111,20 +101,11 @@ void ManageDataLogin()
         }
     }
 
-    if (strcmp(password, PASSWORD) == 0)
+    if (strcmp(password, PASSWORD) == 0) // display the manage data menu when logged in
     {
         system("cls");
         printf("\nLogged in Succesflly\n");
-
-        FILE *titlePtr = fopen("StylisticTexts/manageData.txt", "r");
-        char c;
-        while (c != EOF)
-        {
-            c = getc(titlePtr); // print Manage Data in the ascii art text
-            printf("%c", c);
-        }
-        printf("\n");
-        fclose(titlePtr);
+        DisplayAsciiArt("StylisticTexts/manageData.txt");
         ManageDataMenu();
     }
 
