@@ -7,7 +7,11 @@
 void DisplayAsciiArt(char fileName[])
 {
     FILE *ptr;
-    ptr = fopen(fileName, "r"); // open file that contains the ascii art for the title
+    if ((ptr = fopen(fileName, "r")) == NULL)
+    { // open file that contains the ascii art for the title
+        printf("File does not exist");
+    }
+
     char c;
     do
     {

@@ -14,4 +14,10 @@ struct recordsTag
     Str100 sPhrase;
 };
 
+struct dataTag
+{
+    int currId;
+    struct recordsTag phraseRecords[100];
+};
+
 #endif

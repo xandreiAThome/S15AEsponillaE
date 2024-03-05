@@ -1,3 +1,11 @@
+/*********************************************************************************************************
+This is to certify that this project is my own work, based on my personal efforts in studying and applying the concepts
+learned. I have constructed the functions and their respective algorithms and corresponding code by myself. The
+program was run, tested, and debugged by my own efforts. I further certify that I have not copied in part or whole or
+otherwise plagiarized the work of other students and/or persons.
+                                                            Ellexandrei A. Esponilla, DLSU ID# 12334634
+*********************************************************************************************************/
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -8,24 +16,22 @@
 #include "GeneralFunc.c"
 
 // TODO
-// Start on the Manage Data feature
 
-void ManageDataLogin();
-void Play();
-void MainMenu();
-void ManageDataMenu();
-void AddRecord();
-
-struct recordsTag Data[100];
-int ID = 0;
+void ManageDataLogin(struct dataTag *gameData);
+void Play(struct dataTag *gameData);
+void MainMenu(struct dataTag *gameData);
+void ManageDataMenu(struct dataTag *gameData);
+void AddRecord(struct dataTag *gameData);
 
 int main()
 {
-    MainMenu();
+    struct dataTag gameData;
+    gameData.currId = 0; // set current index of first empty index of phraseRecords array
+    MainMenu(&gameData);
     return 0;
 }
 
-void MainMenu()
+void MainMenu(struct dataTag *gameData)
 {
     system("cls");
     DisplayAsciiArt("StylisticTexts/title.txt");
@@ -37,10 +43,10 @@ void MainMenu()
     switch (DisplayOptions(sOptions, 3))
     {
     case 0:
-        ManageDataLogin();
+        ManageDataLogin(gameData);
         break;
     case 1:
-        Play();
+        Play(gameData);
         break;
     case 2:
         system("cls");
@@ -49,16 +55,15 @@ void MainMenu()
     }
 }
 
-void ManageDataLogin()
+void ManageDataLogin(struct dataTag *gameData)
 {
-
     Str10 password;
-    int i = 0, nAttempts = 2, bGoToMenu = 0;
+    int i = 0, nAttempts = 2, bGoToMenu = 0, nContinue = 1;
     char ch;
     system("cls");
     DisplayAsciiArt("StylisticTexts/manageData.txt");
     printf("Enter password: ");
-    while (1)
+    while (nContinue)
     {
 
         ch = getch();
@@ -71,9 +76,9 @@ void ManageDataLogin()
             }
 
             password[i] = '\0';
-            if (strcmp(PASSWORD, password) == 0) // if pasword is correct break out of loop
+            if (strcmp(PASSWORD, password) == 0) // if pasword is correct then make the loop stop
             {
-                break;
+                nContinue = 0;
             }
             else
             {
@@ -102,7 +107,7 @@ void ManageDataLogin()
         if ((int)ch == 27)
         {
             bGoToMenu = 1; // if user pressed ESC then break out of the loop and make the boolean var true
-            break;
+            nContinue = 0;
         }
     }
 
@@ -110,16 +115,16 @@ void ManageDataLogin()
     {
         system("cls");
         printf("\nLogged in Succesflly\n");
-        ManageDataMenu();
+        ManageDataMenu(gameData);
     }
 
     if (bGoToMenu)
     {
-        MainMenu();
+        MainMenu(gameData);
     }
 }
 
-void ManageDataMenu()
+void ManageDataMenu(struct dataTag *gameData)
 {
     DisplayAsciiArt("StylisticTexts/manageData.txt");
     Str20 sOptions[6] = {"Add a Record",
@@ -132,10 +137,10 @@ void ManageDataMenu()
     switch (DisplayOptions(sOptions, 6))
     {
     case 0:
-        AddRecord();
+        AddRecord(gameData);
         break;
     case 5:
-        MainMenu();
+        MainMenu(gameData);
         break;
 
     default:
@@ -143,7 +148,7 @@ void ManageDataMenu()
     }
 }
 
-void AddRecord()
+void AddRecord(struct dataTag *gameData)
 {
     Str100 sNewPhrase;
     int i, nDup = 0, nPhraseLen;
@@ -154,50 +159,51 @@ void AddRecord()
     fflush(stdin);
     scanf("%100[^\n]%*c", sNewPhrase); // ask for input
 
-    for (i = 0; i < 100; i++) // checks in the array of the data if the phrase already exists
+    for (i = 0; i < 100 && !nDup; i++) // checks in the array of the data if the phrase already exists
     {
-        if (strcmp(sNewPhrase, Data[i].sPhrase) == 0)
+        if (strcmp(sNewPhrase, gameData->phraseRecords[i].sPhrase) == 0)
         {
-            nDup = 1;
-            break;
+            nDup = 1; // change to true if it phrase is found
         }
     }
     nPhraseLen = strlen(sNewPhrase);
+    i--; // decrement i so that the current index of the matching phrase is correct
 
     if (nDup) // if it exists then show the entry
     {
         printf("Phrase already exists\n\n");
-        printf("Id: %d\nLevel: %s\nCharacter count: %d\nPhrase: %s\n\n", Data[i].nId, Data[i].sLevel, Data[i].nNumOfChars, Data[i].sPhrase);
+        printf("Id: %d\nLevel: %s\nCharacter count: %d\nPhrase: %s\n\n", gameData->phraseRecords[i].nId,
+               gameData->phraseRecords[i].sLevel, gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
         printf("Returning to Menu....");
         Sleep(3000); // after 3 seconds return to main menu
         system("cls");
-        ManageDataMenu();
+        ManageDataMenu(gameData);
     }
     else // if not, then add the new phrase to the array of struct
     {
-        Data[ID].nId = ID;
-        Data[ID].nNumOfChars = nPhraseLen;
-        strcpy(Data[ID].sPhrase, sNewPhrase);
+        gameData->phraseRecords[gameData->currId].nId = gameData->currId;
+        gameData->phraseRecords[gameData->currId].nNumOfChars = nPhraseLen;
+        strcpy(gameData->phraseRecords[gameData->currId].sPhrase, sNewPhrase);
         if (nPhraseLen <= 33)
         {
-            strcpy(Data[ID].sLevel, "easy");
+            strcpy(gameData->phraseRecords[gameData->currId].sLevel, "easy"); // if num of char is less than or equal to 33 then level is easy
         }
         else if (nPhraseLen < 66)
         {
-            strcpy(Data[ID].sLevel, "medium");
+            strcpy(gameData->phraseRecords[gameData->currId].sLevel, "medium"); // if num of char is less than 66 then level is medium
         }
         else
         {
-            strcpy(Data[ID].sLevel, "hard");
+            strcpy(gameData->phraseRecords[gameData->currId].sLevel, "hard"); // greater than or equal to 66 is hard
         }
-        ID++;
+        gameData->currId++; // increment the curr ID to point to the next empty index in the phraseRecords array
         system("cls");
         printf("Succesfully added\n");
-        ManageDataMenu();
+        ManageDataMenu(gameData);
     }
 }
 
-void Play()
+void Play(struct dataTag *gameData)
 {
 
     return;
