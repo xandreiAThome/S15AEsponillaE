@@ -77,6 +77,7 @@ int NumLen(int n)
 void DisplayTable(struct dataTag *gameData)
 {
     char *labelRow = "ID\t\tLevel\t\tNo. of Chars\t\tPhrase"; // row for the labels
+    // put in a variable to be able to take the length of the string
 
     int longestPhrase = 0, i;
 
