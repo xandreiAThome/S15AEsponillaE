@@ -23,6 +23,9 @@ void MainMenu(struct dataTag *gameData);
 void ManageDataMenu(struct dataTag *gameData);
 void AddRecord(struct dataTag *gameData);
 void EditRecord(struct dataTag *gameData);
+void DeleteRecord(struct dataTag *gameData);
+void ImportData(struct dataTag *gameData);
+void ExportData(struct dataTag *gameData);
 
 int main()
 {
@@ -152,6 +155,15 @@ void ManageDataMenu(struct dataTag *gameData)
     case 1:
         EditRecord(gameData);
         break;
+    case 2:
+        DeleteRecord(gameData);
+        break;
+    case 3:
+        ImportData(gameData);
+        break;
+    case 4:
+        ExportData(gameData);
+        break;
     case 5:
         MainMenu(gameData);
         break;
@@ -218,9 +230,50 @@ void AddRecord(struct dataTag *gameData)
 
 void EditRecord(struct dataTag *gameData)
 {
+    int nChose;
+
     system("cls");
     DisplayAsciiArt("StylisticTexts/editRecord.txt");
     DisplayTable(gameData);
+    printf("\nEnter -1 to go back to Menu\nEnter the ID of the Phrase to edit: ");
+    scanf("%d", &nChose);
+    if (nChose == -1)
+        ManageDataMenu(gameData);
+}
+
+void DeleteRecord(struct dataTag *gameData)
+{
+}
+void ImportData(struct dataTag *gameData)
+{
+}
+void ExportData(struct dataTag *gameData)
+{
+    char fileName[31];
+    int i;
+    FILE *outPtr;
+
+    system("cls");
+    DisplayAsciiArt("StylisticTexts/exportData.txt");
+    printf("Enter Filename: ");
+
+    scanf("%30s", fileName);
+    while (strcmp(&fileName[strlen(fileName) - 4], ".txt") != 0)
+    {
+        printf("Invalid filename try again: "); // continue prompting if the file extension is not .txt
+        scanf("%30s", fileName);
+    }
+    outPtr = fopen(fileName, "w");
+
+    for (i = 0; i < gameData->currId; i++) // iterate over each of the phrase in the records and print it to the file
+    {
+        fprintf(outPtr, "%d\n%s\n%d\n%s\n\n", gameData->phraseRecords[i].nId, gameData->phraseRecords[i].sLevel,
+                gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
+        fflush(outPtr);
+    }
+    printf("Succesfully Exported\nReturning to Menu....");
+    Sleep(2500);
+    ManageDataMenu(gameData);
 }
 
 void Play(struct dataTag *gameData)
