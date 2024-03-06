@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "TypingGame.h"
+#include <math.h>
 
 /*
 @param filename: The name of the textFile that contains the ascii art
@@ -51,4 +52,50 @@ int DisplayOptions(Str20 sOptions[], int size)
         }
 
     return nSelected; // if the first input is valid then return it
+}
+
+/*
+Precondition for positive integers only
+@param n: the integer that will be measured
+@return returns the number of digits in the integer
+*/
+int NumLen(int n)
+{
+    int nLen = 0;
+    while (n > 0) // cut off one digit from the left and increment nLen as long as n is still greater than zero
+    {
+        n /= 10;
+        nLen++;
+    }
+
+    return nLen;
+}
+
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+*/
+void DisplayTable(struct dataTag *gameData)
+{
+    char *labelRow = "ID\t\tLevel\t\tNo. of Chars\t\tPhrase"; // row for the labels
+
+    int longestPhrase = 0, i;
+
+    for (i = 0; i < gameData->currId; i++)
+    {
+        if (gameData->phraseRecords[i].nNumOfChars > longestPhrase)
+            longestPhrase = gameData->phraseRecords[i].nNumOfChars; // get the longest phrase in the game data
+    }
+
+    int nLen = (strlen(labelRow) * 2) + abs(strlen("Phrase") - longestPhrase); // get the lenght of the label row
+
+    for (i = 0; i < nLen; i++)
+        printf("=");
+    printf("\n%s\n", labelRow); // print the label row and the border
+    for (i = 0; i < nLen; i++)
+        printf("=");
+    printf("\n");
+
+    for (i = 0; i < gameData->currId; i++) // print each of the records
+        printf("%d\t\t%s\t\t%d\t\t\t%s\n", gameData->phraseRecords[i].nId, gameData->phraseRecords[i].sLevel,
+               gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
 }

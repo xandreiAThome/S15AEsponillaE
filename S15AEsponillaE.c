@@ -22,12 +22,14 @@ void Play(struct dataTag *gameData);
 void MainMenu(struct dataTag *gameData);
 void ManageDataMenu(struct dataTag *gameData);
 void AddRecord(struct dataTag *gameData);
+void EditRecord(struct dataTag *gameData);
 
 int main()
 {
     struct dataTag gameData;
     gameData.currId = 0; // set current index of first empty index of phraseRecords array
     MainMenu(&gameData);
+
     return 0;
 }
 
@@ -71,8 +73,8 @@ void ManageDataLogin(struct dataTag *gameData)
         {
             if (nAttempts == 0) // if user tried to enter password 3 times
             {
-                printf("\nTried to enter too many times, try again later");
-                return;
+                printf("\nTried to enter too many times, try again later\nReturning to Main Menu...");
+                nContinue = 0;
             }
 
             password[i] = '\0';
@@ -80,7 +82,7 @@ void ManageDataLogin(struct dataTag *gameData)
             {
                 nContinue = 0;
             }
-            else
+            else if (nContinue) // only continue to run this if statement if nContinue is still true
             {
                 nAttempts--; // else try again
                 printf("\nIncorrect Password, %d tries remaining\n", nAttempts + 1);
@@ -111,6 +113,12 @@ void ManageDataLogin(struct dataTag *gameData)
         }
     }
 
+    if (nAttempts == 0) // if user tried to enter password too many times
+    {
+        Sleep(3000);
+        MainMenu(gameData);
+    }
+
     if (strcmp(password, PASSWORD) == 0) // display the manage data menu when logged in
     {
         system("cls");
@@ -126,7 +134,9 @@ void ManageDataLogin(struct dataTag *gameData)
 
 void ManageDataMenu(struct dataTag *gameData)
 {
+    system("cls");
     DisplayAsciiArt("StylisticTexts/manageData.txt");
+
     Str20 sOptions[6] = {"Add a Record",
                          "Edit a Record",
                          "Delete a Record",
@@ -138,6 +148,9 @@ void ManageDataMenu(struct dataTag *gameData)
     {
     case 0:
         AddRecord(gameData);
+        break;
+    case 1:
+        EditRecord(gameData);
         break;
     case 5:
         MainMenu(gameData);
@@ -201,6 +214,13 @@ void AddRecord(struct dataTag *gameData)
         printf("Succesfully added\n");
         ManageDataMenu(gameData);
     }
+}
+
+void EditRecord(struct dataTag *gameData)
+{
+    system("cls");
+    DisplayAsciiArt("StylisticTexts/editRecord.txt");
+    DisplayTable(gameData);
 }
 
 void Play(struct dataTag *gameData)
