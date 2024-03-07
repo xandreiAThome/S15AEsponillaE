@@ -16,6 +16,7 @@ otherwise plagiarized the work of other students and/or persons.
 #include "GeneralFunc.c"
 
 // TODO
+// FIX EDIT RECORD
 
 void ManageDataLogin(struct dataTag *gameData);
 void Play(struct dataTag *gameData);
@@ -223,7 +224,6 @@ void AddRecord(struct dataTag *gameData)
         }
         gameData->currId++; // increment the curr ID to point to the next empty index in the phraseRecords array
         system("cls");
-        printf("Succesfully added\n");
         ManageDataMenu(gameData);
     }
 }
@@ -231,14 +231,78 @@ void AddRecord(struct dataTag *gameData)
 void EditRecord(struct dataTag *gameData)
 {
     int nChose;
+    int i, nDup = 0, nPhraseLen;
+    char goToMenu;
+    Str100 sNewPhrase;
 
     system("cls");
     DisplayAsciiArt("StylisticTexts/editRecord.txt");
     DisplayTable(gameData);
-    printf("\nEnter -1 to go back to Menu\nEnter the ID of the Phrase to edit: ");
-    scanf("%d", &nChose);
-    if (nChose == -1)
+    printf("\nEnter r to go back to Menu\nEnter the ID of the Phrase to edit: ");
+    if (scanf("%d", &nChose) == 0)
+        scanf("%c", &goToMenu);
+    if (goToMenu == 'r' || goToMenu == 'R')
+    {
         ManageDataMenu(gameData);
+        return;
+    }
+
+    while (nChose < 0 || nChose >= gameData->currId)
+    {
+        printf("Invalid ID, Choose Again: ");
+        if (scanf("%d", &nChose) == 0)
+            scanf("%c", &goToMenu);
+        if (goToMenu == 'r' || goToMenu == 'R')
+        {
+            ManageDataMenu(gameData);
+            return;
+        }
+    }
+
+    printf("Phrase: %s\n", gameData->phraseRecords[nChose].sPhrase);
+    printf("Edit Phrase: ");
+    fflush(stdin);
+    scanf("%100[^\n]%*c", sNewPhrase); // ask for input
+
+    for (i = 0; i < 100 && !nDup; i++) // checks in the array of the data if the phrase already exists
+    {
+        if (strcmp(sNewPhrase, gameData->phraseRecords[i].sPhrase) == 0)
+        {
+            nDup = 1; // change to true if it phrase is found
+        }
+    }
+    nPhraseLen = strlen(sNewPhrase);
+    i--; // decrement i so that the current index of the matching phrase is correct
+
+    if (nDup) // if it exists then show the entry
+    {
+        printf("Phrase already exists\n\n");
+        printf("Id: %d\nLevel: %s\nCharacter count: %d\nPhrase: %s\n\n", gameData->phraseRecords[i].nId,
+               gameData->phraseRecords[i].sLevel, gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
+        printf("Returning to Menu....");
+        Sleep(3000); // after 3 seconds return to main menu
+        system("cls");
+        ManageDataMenu(gameData);
+    }
+    else // if not, then add the new phrase to the array of struct
+    {
+        gameData->phraseRecords[nChose].nNumOfChars = nPhraseLen;
+        strcpy(gameData->phraseRecords[nChose].sPhrase, sNewPhrase);
+        if (nPhraseLen <= 33)
+        {
+            strcpy(gameData->phraseRecords[nChose].sLevel, "easy"); // if num of char is less than or equal to 33 then level is easy
+        }
+        else if (nPhraseLen < 66)
+        {
+            strcpy(gameData->phraseRecords[nChose].sLevel, "medium"); // if num of char is less than 66 then level is medium
+        }
+        else
+        {
+            strcpy(gameData->phraseRecords[nChose].sLevel, "hard"); // greater than or equal to 66 is hard
+        }
+        system("cls");
+        ManageDataMenu(gameData);
+    }
 }
 
 void DeleteRecord(struct dataTag *gameData)
