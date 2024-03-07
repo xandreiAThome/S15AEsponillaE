@@ -16,7 +16,7 @@ otherwise plagiarized the work of other students and/or persons.
 #include "GeneralFunc.c"
 
 // TODO
-// FIX EDIT RECORD
+// FIX EDIT RECORD to reprompt if the phrase being edited into already exists
 
 void ManageDataLogin(struct dataTag *gameData);
 void Play(struct dataTag *gameData);
@@ -179,7 +179,7 @@ void AddRecord(struct dataTag *gameData)
     Str100 sNewPhrase;
     int i, nDup = 0, nPhraseLen;
     system("cls");
-    DisplayAsciiArt("StylisticTexts/manageData.txt");
+    DisplayAsciiArt("StylisticTexts/addRecord.txt");
 
     printf("Add a new phrase: ");
     fflush(stdin);
@@ -195,59 +195,63 @@ void AddRecord(struct dataTag *gameData)
     nPhraseLen = strlen(sNewPhrase);
     i--; // decrement i so that the current index of the matching phrase is correct
 
-    if (nDup) // if it exists then show the entry
+    while (nDup) // if phrase already exists then show the entry and reprompt
     {
-        printf("Phrase already exists\n\n");
-        printf("Id: %d\nLevel: %s\nCharacter count: %d\nPhrase: %s\n\n", gameData->phraseRecords[i].nId,
-               gameData->phraseRecords[i].sLevel, gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
-        printf("Returning to Menu....");
-        Sleep(3000); // after 3 seconds return to main menu
-        system("cls");
-        ManageDataMenu(gameData);
+        printf("Phrase already exists\n");
+        DisplayTable(gameData, i);
+        printf("\nAdd a new phrase: ");
+        fflush(stdin);
+        scanf("%100[^\n]%*c", sNewPhrase); // ask for input
+        nDup = 0;                          // assume that the new input will not be a duplicate
+
+        for (i = 0; i < 100 && !nDup; i++) // checks in the array of the data if the phrase already exists
+        {
+            if (strcmp(sNewPhrase, gameData->phraseRecords[i].sPhrase) == 0)
+                nDup = 1; // change to true if phrase is found
+        }
+        nPhraseLen = strlen(sNewPhrase);
+        i--; // decrement i so that the current index of the matching phrase is correct
     }
-    else // if not, then add the new phrase to the array of struct
+
+    gameData->phraseRecords[gameData->currId].nId = gameData->currId;
+    gameData->phraseRecords[gameData->currId].nNumOfChars = nPhraseLen;
+    strcpy(gameData->phraseRecords[gameData->currId].sPhrase, sNewPhrase);
+    if (nPhraseLen <= 33)
     {
-        gameData->phraseRecords[gameData->currId].nId = gameData->currId;
-        gameData->phraseRecords[gameData->currId].nNumOfChars = nPhraseLen;
-        strcpy(gameData->phraseRecords[gameData->currId].sPhrase, sNewPhrase);
-        if (nPhraseLen <= 33)
-        {
-            strcpy(gameData->phraseRecords[gameData->currId].sLevel, "easy"); // if num of char is less than or equal to 33 then level is easy
-        }
-        else if (nPhraseLen < 66)
-        {
-            strcpy(gameData->phraseRecords[gameData->currId].sLevel, "medium"); // if num of char is less than 66 then level is medium
-        }
-        else
-        {
-            strcpy(gameData->phraseRecords[gameData->currId].sLevel, "hard"); // greater than or equal to 66 is hard
-        }
-        gameData->currId++; // increment the curr ID to point to the next empty index in the phraseRecords array
-        system("cls");
-        ManageDataMenu(gameData);
+        strcpy(gameData->phraseRecords[gameData->currId].sLevel, "easy"); // if num of char is less than or equal to 33 then level is easy
     }
+    else if (nPhraseLen < 66)
+    {
+        strcpy(gameData->phraseRecords[gameData->currId].sLevel, "medium"); // if num of char is less than 66 then level is medium
+    }
+    else
+    {
+        strcpy(gameData->phraseRecords[gameData->currId].sLevel, "hard"); // greater than or equal to 66 is hard
+    }
+    gameData->currId++; // increment the curr ID to point to the next empty index in the phraseRecords array
+    ManageDataMenu(gameData);
 }
 
 void EditRecord(struct dataTag *gameData)
 {
-    int nChose;
+    int nChose = -1;
     int i, nDup = 0, nPhraseLen;
     char goToMenu;
     Str100 sNewPhrase;
 
     system("cls");
     DisplayAsciiArt("StylisticTexts/editRecord.txt");
-    DisplayTable(gameData);
+    DisplayTable(gameData, -1);
     printf("\nEnter r to go back to Menu\nEnter the ID of the Phrase to edit: ");
-    if (scanf("%d", &nChose) == 0)
-        scanf("%c", &goToMenu);
-    if (goToMenu == 'r' || goToMenu == 'R')
+    if (scanf("%d", &nChose) == 0)          // if scanf did not scan any integer input
+        scanf("%c", &goToMenu);             // then scan it to a char var
+    if (goToMenu == 'r' || goToMenu == 'R') // if the char is r then return to menu
     {
         ManageDataMenu(gameData);
         return;
     }
 
-    while (nChose < 0 || nChose >= gameData->currId)
+    while (nChose < 0 || nChose >= gameData->currId) // if invalid ID then reprompt again
     {
         printf("Invalid ID, Choose Again: ");
         if (scanf("%d", &nChose) == 0)
@@ -262,7 +266,7 @@ void EditRecord(struct dataTag *gameData)
     printf("Phrase: %s\n", gameData->phraseRecords[nChose].sPhrase);
     printf("Edit Phrase: ");
     fflush(stdin);
-    scanf("%100[^\n]%*c", sNewPhrase); // ask for input
+    scanf("%100[^\n]%*c", sNewPhrase); // ask for phrase input
 
     for (i = 0; i < 100 && !nDup; i++) // checks in the array of the data if the phrase already exists
     {
@@ -280,8 +284,7 @@ void EditRecord(struct dataTag *gameData)
         printf("Id: %d\nLevel: %s\nCharacter count: %d\nPhrase: %s\n\n", gameData->phraseRecords[i].nId,
                gameData->phraseRecords[i].sLevel, gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
         printf("Returning to Menu....");
-        Sleep(3000); // after 3 seconds return to main menu
-        system("cls");
+        Sleep(2500); // after 2.5 seconds return to main menu
         ManageDataMenu(gameData);
     }
     else // if not, then add the new phrase to the array of struct
@@ -300,7 +303,6 @@ void EditRecord(struct dataTag *gameData)
         {
             strcpy(gameData->phraseRecords[nChose].sLevel, "hard"); // greater than or equal to 66 is hard
         }
-        system("cls");
         ManageDataMenu(gameData);
     }
 }

@@ -11,6 +11,7 @@ void DisplayAsciiArt(char fileName[])
     if ((ptr = fopen(fileName, "r")) == NULL)
     { // open file that contains the ascii art for the title
         printf("File does not exist");
+        return;
     }
 
     char c;
@@ -73,30 +74,37 @@ int NumLen(int n)
 
 /*
     @param *gameData: the pointer variable for the gamedata structure in main
+    @param nIndex: input a negative if you want to print the whole array, otherwise input the index of the record to print
 */
-void DisplayTable(struct dataTag *gameData)
+void DisplayTable(struct dataTag *gameData, int nIndex)
 {
     char *labelRow = "ID\t\tLevel\t\tNo. of Chars\t\tPhrase"; // row for the labels
     // put in a variable to be able to take the length of the string
 
     int longestPhrase = 0, i;
 
-    for (i = 0; i < gameData->currId; i++)
-    {
-        if (gameData->phraseRecords[i].nNumOfChars > longestPhrase)
-            longestPhrase = gameData->phraseRecords[i].nNumOfChars; // get the longest phrase in the game data
-    }
+    if (nIndex < 0)
+        for (i = 0; i < gameData->currId; i++)
+        {
+            if (gameData->phraseRecords[i].nNumOfChars > longestPhrase)
+                longestPhrase = gameData->phraseRecords[i].nNumOfChars; // get the longest phrase in the game data
+        }
 
     int nLen = (strlen(labelRow) * 2) + abs(strlen("Phrase") - longestPhrase); // get the lenght of the label row
 
-    for (i = 0; i < nLen; i++)
+    for (i = 0; i < nLen; i++) // printf "=" equal to the length of the string for the label row and the phrase
         printf("=");
     printf("\n%s\n", labelRow); // print the label row and the border
     for (i = 0; i < nLen; i++)
         printf("=");
     printf("\n");
 
-    for (i = 0; i < gameData->currId; i++) // print each of the records
-        printf("%d\t\t%s\t\t%d\t\t\t%s\n", gameData->phraseRecords[i].nId, gameData->phraseRecords[i].sLevel,
-               gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
+    if (nIndex < 0)
+        for (i = 0; i < gameData->currId; i++) // print each of the records
+            printf("%d\t\t%s\t\t%d\t\t\t%s\n", gameData->phraseRecords[i].nId, gameData->phraseRecords[i].sLevel,
+                   gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
+    else
+        // print only the specified record
+        printf("%d\t\t%s\t\t%d\t\t\t%s\n", gameData->phraseRecords[nIndex].nId, gameData->phraseRecords[nIndex].sLevel,
+               gameData->phraseRecords[nIndex].nNumOfChars, gameData->phraseRecords[nIndex].sPhrase);
 }
