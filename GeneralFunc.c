@@ -108,3 +108,18 @@ void DisplayTable(struct dataTag *gameData, int nIndex)
         printf("%d\t\t%s\t\t%d\t\t\t%s\n", gameData->phraseRecords[nIndex].nId, gameData->phraseRecords[nIndex].sLevel,
                gameData->phraseRecords[nIndex].nNumOfChars, gameData->phraseRecords[nIndex].sPhrase);
 }
+
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+*/
+void InitializeEmptyRecord(struct dataTag *gameData)
+{
+    int i;
+    for (i = 0; i < MAX_RECORDS; i++)
+    {
+        gameData->phraseRecords[i].nId = -1; // initialize all values of the elements to -1 regardless of the data type
+        gameData->phraseRecords[i].nNumOfChars = -1;
+        strcpy(gameData->phraseRecords[i].sLevel, "-1");
+        strcpy(gameData->phraseRecords[i].sPhrase, "-1");
+    }
+}
