@@ -16,7 +16,7 @@ otherwise plagiarized the work of other students and/or persons.
 #include "GeneralFunc.c"
 
 // TODO
-// FIX DELETE RECORDS func
+// TEST DELETE RECORDS FOR BUGS
 
 void ManageDataLogin(struct dataTag *gameData);
 void Play(struct dataTag *gameData);
@@ -375,12 +375,54 @@ void DeleteRecord(struct dataTag *gameData)
     DeleteRecord(gameData);
     return;
 }
+
 void ImportData(struct dataTag *gameData)
 {
+    Str30 fileName;
+    FILE *inPtr;
+    int initCurrId = gameData->currId;
+
+    DisplayAsciiArt("StylisticTexts/importData.txt");
+    printf("Enter r to go back to Menu\nEnter file name: "); // ask for file name
+    scanf("%30s", fileName);
+    if (strcmp(fileName, "r") == 0) // if r is entered then go back to menu
+    {
+        ManageDataMenu(gameData);
+        return;
+    }
+    inPtr = fopen(fileName, "r"); // open file for reading
+
+    while (inPtr == NULL)
+    {
+        printf("File does not exist\nEnter file name: "); // reprompt if file does not exist
+        scanf("%30s", fileName);
+        if (strcmp(fileName, "r") == 0) // if r is entered then go back to menu
+        {
+            ManageDataMenu(gameData);
+            return;
+        }
+        inPtr = fopen(fileName, "r");
+    }
+
+    // scan the values in the file into the gameData while fscanf still reads values
+    while (fscanf(inPtr, "%d", &gameData->phraseRecords[gameData->currId].nId) > 0 &&
+           fscanf(inPtr, "%s", gameData->phraseRecords[gameData->currId].sLevel) > 0 &&
+           fscanf(inPtr, "%d", &gameData->phraseRecords[gameData->currId].nNumOfChars) > 0 &&
+           fscanf(inPtr, "%*c%[^\n]", gameData->phraseRecords[gameData->currId].sPhrase) > 0)
+    {
+        gameData->phraseRecords[gameData->currId].nId += initCurrId; // add the initial currId to the id of the phrase so that the id stil
+                                                                     // corresponds to their index in the array
+        gameData->currId++;                                          // increment the currId to indicate the next empty index
+    }
+
+    system("cls");
+    printf("File Imported Succesfully"); // go back to menu
+    ManageDataMenu(gameData);
 }
+
 void ExportData(struct dataTag *gameData)
 {
-    char fileName[31];
+    Str30 fileName;
     int i;
     FILE *outPtr;
 
@@ -402,8 +444,8 @@ void ExportData(struct dataTag *gameData)
                 gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
         fflush(outPtr);
     }
-    printf("Succesfully Exported\nReturning to Menu....");
-    Sleep(2500);
+    printf("Succesfully Exported\n");
+    fclose(outPtr);
     ManageDataMenu(gameData);
 }
 

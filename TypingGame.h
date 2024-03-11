@@ -7,6 +7,7 @@
 typedef char Str10[11];
 typedef char Str100[101];
 typedef char Str20[21];
+typedef char Str30[31];
 struct recordsTag
 {
     int nId;
