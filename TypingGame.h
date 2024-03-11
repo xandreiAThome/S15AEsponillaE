@@ -10,16 +10,24 @@ typedef char Str20[21];
 typedef char Str30[31];
 struct recordsTag
 {
-    int nId;
+    int nId; // nId will be the same as their index in the array, so nId must be changed when importing and deleting phrases
     Str10 sLevel;
     int nNumOfChars;
     Str100 sPhrase;
 };
 
+struct scoresTag
+{
+    int nScore;
+    Str20 sPlayer;
+};
+
 struct dataTag
 {
     int currId;
+    int numPlayers;
     struct recordsTag phraseRecords[MAX_RECORDS];
+    struct scoresTag scoresRecord[MAX_RECORDS];
 };
 
 #endif

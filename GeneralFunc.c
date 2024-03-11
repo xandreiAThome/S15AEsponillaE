@@ -81,7 +81,7 @@ void DisplayTable(struct dataTag *gameData, int nIndex)
     char *labelRow = "ID\t\tLevel\t\tNo. of Chars\t\tPhrase"; // row for the labels
     // put in a variable to be able to take the length of the string
 
-    int longestPhrase = 0, i;
+    int longestPhrase = 0, i, nLen;
 
     if (nIndex < 0)
         for (i = 0; i < gameData->currId; i++)
@@ -90,7 +90,7 @@ void DisplayTable(struct dataTag *gameData, int nIndex)
                 longestPhrase = gameData->phraseRecords[i].nNumOfChars; // get the longest phrase in the game data
         }
 
-    int nLen = (strlen(labelRow) * 2) + abs(strlen("Phrase") - longestPhrase); // get the lenght of the label row
+    nLen = (strlen(labelRow) * 2) + abs(strlen("Phrase") - longestPhrase); // get the lenght of the label row
 
     for (i = 0; i < nLen; i++) // printf "=" equal to the length of the string for the label row and the phrase
         printf("=");

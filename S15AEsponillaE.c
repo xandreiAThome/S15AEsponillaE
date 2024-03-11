@@ -19,7 +19,7 @@ otherwise plagiarized the work of other students and/or persons.
 // TEST DELETE RECORDS FOR BUGS
 
 void ManageDataLogin(struct dataTag *gameData);
-void Play(struct dataTag *gameData);
+void PlayMenu(struct dataTag *gameData);
 void MainMenu(struct dataTag *gameData);
 void ManageDataMenu(struct dataTag *gameData);
 void AddRecord(struct dataTag *gameData);
@@ -27,12 +27,15 @@ void EditRecord(struct dataTag *gameData);
 void DeleteRecord(struct dataTag *gameData);
 void ImportData(struct dataTag *gameData);
 void ExportData(struct dataTag *gameData);
+void Play(struct dataTag *gameData);
+void ViewScores(struct dataTag *gameData);
 
 int main()
 {
     struct dataTag gameData;
     InitializeEmptyRecord(&gameData);
     gameData.currId = 0; // set current index of first empty index of phraseRecords array
+    gameData.numPlayers = 0;
     MainMenu(&gameData);
 
     return 0;
@@ -43,17 +46,19 @@ void MainMenu(struct dataTag *gameData)
     system("cls");
     DisplayAsciiArt("StylisticTexts/title.txt");
 
-    Str20 sOptions[3] = {"Manage Data", "Play", "Exit"};
+    Str20 sOptions[3] = {"Manage Data", "Play Menu", "Exit"};
 
     // switch cases for the option the user inputted
 
     switch (DisplayOptions(sOptions, 3))
     {
     case 0:
+        system("cls");
         ManageDataLogin(gameData);
         break;
     case 1:
-        Play(gameData);
+        system("cls");
+        PlayMenu(gameData);
         break;
     case 2:
         system("cls");
@@ -67,7 +72,6 @@ void ManageDataLogin(struct dataTag *gameData)
     Str10 password;
     int i = 0, nAttempts = 2, bGoToMenu = 0, nContinue = 1;
     char ch;
-    system("cls");
     DisplayAsciiArt("StylisticTexts/manageData.txt");
     printf("Enter password: ");
     while (nContinue)
@@ -449,8 +453,59 @@ void ExportData(struct dataTag *gameData)
     ManageDataMenu(gameData);
 }
 
-void Play(struct dataTag *gameData)
+void PlayMenu(struct dataTag *gameData)
 {
+    Str20 options[3] = {"Play Game", "View Scores", "Return to Main Menu"};
+    DisplayAsciiArt("StylisticTexts/playMenu.txt");
+
+    switch (DisplayOptions(options, 3))
+    {
+    case 0:
+        system("cls");
+        Play(gameData);
+        break;
+    case 1:
+        system("cls");
+        ViewScores(gameData);
+        break;
+    case 2:
+        system("cls");
+        MainMenu(gameData);
+    }
 
     return;
+}
+
+void Play(struct dataTag *gameData)
+{
+    DisplayAsciiArt("StylisticTexts/title.txt");
+}
+
+void ViewScores(struct dataTag *gameData)
+{
+    // FILE *inPtr;
+    // inPtr = fopen("scores.txt", "r");
+    int i, longestName = 0, nLen;
+    DisplayAsciiArt("StylisticTexts/viewScores.txt");
+    char *labelRow = "Score\t\tPlayer Name"; // row for the labels
+
+    for (i = 0; i < gameData->numPlayers; i++)
+    {
+        if (strlen(gameData->scoresRecord->sPlayer) > longestName)
+            longestName = strlen(gameData->scoresRecord->sPlayer); // get the longest player name in the game data
+    }
+
+    nLen = strlen(labelRow) + abs(strlen("Player Name") - longestName); // get the lenght of the label row
+
+    for (i = 0; i < nLen; i++) // printf "=" equal to the length of the string for the label row and the phrase
+        printf("=");
+    printf("\n%s\n", labelRow); // print the label row and the border
+    for (i = 0; i < nLen; i++)
+        printf("=");
+    printf("\n");
+
+    for (i = 0; i < gameData->numPlayers; i++) // print the scores of each players in the game data
+    {
+        printf("%d\t\t%s", gameData->scoresRecord[i].nScore, gameData->scoresRecord[i].sPlayer);
+    }
 }
