@@ -20,6 +20,7 @@ struct scoresTag
 {
     int nScore;
     Str20 sPlayer;
+    Str10 sLevel;
 };
 
 struct dataTag

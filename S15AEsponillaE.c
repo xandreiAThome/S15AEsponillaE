@@ -10,13 +10,16 @@ otherwise plagiarized the work of other students and/or persons.
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
-#include <windows.h>
+// #include <windows.h>
 
 #include "TypingGame.h"
 #include "GeneralFunc.c"
 
 // TODO
 // TEST DELETE RECORDS FOR BUGS
+// COMPLETE VIEWSCORES FUNC
+// COMPLETE PLAY LOOP
+// Check if there are multiple preexisting phrases in the game data and you import same phrases if the id is still consistent
 
 void ManageDataLogin(struct dataTag *gameData);
 void PlayMenu(struct dataTag *gameData);
@@ -34,8 +37,9 @@ int main()
 {
     struct dataTag gameData;
     InitializeEmptyRecord(&gameData);
-    gameData.currId = 0; // set current index of first empty index of phraseRecords array
-    gameData.numPlayers = 0;
+    gameData.currId = 0;     // set current index of first empty index of phraseRecords array
+    gameData.numPlayers = 0; // set the number of players that played the game to initially zero;
+    system("cls");
     MainMenu(&gameData);
 
     return 0;
@@ -43,8 +47,7 @@ int main()
 
 void MainMenu(struct dataTag *gameData)
 {
-    system("cls");
-    DisplayAsciiArt("StylisticTexts/title.txt");
+    DisplayAsciiArt("StylisticTexts/mainMenu.txt");
 
     Str20 sOptions[3] = {"Manage Data", "Play Menu", "Exit"};
 
@@ -82,7 +85,6 @@ void ManageDataLogin(struct dataTag *gameData)
         {
             if (nAttempts == 0) // if user tried to enter password 3 times
             {
-                printf("\nTried to enter too many times, try again later\nReturning to Main Menu...");
                 nContinue = 0;
             }
 
@@ -124,7 +126,8 @@ void ManageDataLogin(struct dataTag *gameData)
 
     if (nAttempts == 0) // if user tried to enter password too many times
     {
-        Sleep(3000);
+        system("cls");
+        printf("Tried to enter too many times\n");
         MainMenu(gameData);
     }
 
@@ -137,6 +140,7 @@ void ManageDataLogin(struct dataTag *gameData)
 
     if (bGoToMenu)
     {
+        system("cls");
         MainMenu(gameData);
     }
 }
@@ -384,7 +388,9 @@ void ImportData(struct dataTag *gameData)
 {
     Str30 fileName;
     FILE *inPtr;
-    int initCurrId = gameData->currId;
+    int initCurrId = gameData->currId, tempId, tempNumChars, dupPhrase = 0;
+    Str10 tempLevel;
+    Str100 tempPhrase;
 
     DisplayAsciiArt("StylisticTexts/importData.txt");
     printf("Enter r to go back to Menu\nEnter file name: "); // ask for file name
@@ -409,14 +415,26 @@ void ImportData(struct dataTag *gameData)
     }
 
     // scan the values in the file into the gameData while fscanf still reads values
-    while (fscanf(inPtr, "%d", &gameData->phraseRecords[gameData->currId].nId) > 0 &&
-           fscanf(inPtr, "%s", gameData->phraseRecords[gameData->currId].sLevel) > 0 &&
-           fscanf(inPtr, "%d", &gameData->phraseRecords[gameData->currId].nNumOfChars) > 0 &&
-           fscanf(inPtr, "%*c%[^\n]", gameData->phraseRecords[gameData->currId].sPhrase) > 0)
+    while (fscanf(inPtr, "%d", &tempId) > 0 &&
+           fscanf(inPtr, "%s", tempLevel) > 0 &&
+           fscanf(inPtr, "%d", &tempNumChars) > 0 &&
+           fscanf(inPtr, "%*c%[^\n]", tempPhrase) > 0)
     {
-        gameData->phraseRecords[gameData->currId].nId += initCurrId; // add the initial currId to the id of the phrase so that the id stil
-                                                                     // corresponds to their index in the array
-        gameData->currId++;                                          // increment the currId to indicate the next empty index
+        if (StringInArray(gameData, tempPhrase, 0) == -1) // if the phrase still doesnt exist in the game data
+        {
+            gameData->phraseRecords[gameData->currId].nId = initCurrId + tempId - dupPhrase;
+            // add the initial currId to the id of the phrase so that the id still corresponds to their index in the array
+            // minus the number of dupPhrases so that the id of the phrases doesnt skip a number
+            gameData->phraseRecords[gameData->currId].nNumOfChars = tempNumChars;
+            strcpy(gameData->phraseRecords[gameData->currId].sLevel, tempLevel);
+            strcpy(gameData->phraseRecords[gameData->currId].sPhrase, tempPhrase);
+
+            gameData->currId++; // increment the currId to indicate the next empty index
+        }
+        else
+        {
+            dupPhrase++; // increment the dupPhrase so that the Id of the phrases are still in order
+        }
     }
 
     system("cls");
@@ -483,8 +501,6 @@ void Play(struct dataTag *gameData)
 
 void ViewScores(struct dataTag *gameData)
 {
-    // FILE *inPtr;
-    // inPtr = fopen("scores.txt", "r");
     int i, longestName = 0, nLen;
     DisplayAsciiArt("StylisticTexts/viewScores.txt");
     char *labelRow = "Score\t\tPlayer Name"; // row for the labels

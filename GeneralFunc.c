@@ -123,3 +123,49 @@ void InitializeEmptyRecord(struct dataTag *gameData)
         strcpy(gameData->phraseRecords[i].sPhrase, "-1");
     }
 }
+
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+*/
+void ImportScores(struct dataTag *gameData)
+{
+    FILE *inPtr;
+
+    if ((inPtr = fopen("scores.txt", "r")) == NULL) // if file does not exist terminate function
+        return;
+
+    while (fscanf(inPtr, "%s", gameData->scoresRecord[gameData->numPlayers].sPlayer) > 0 &&
+           fscanf(inPtr, "%d", &gameData->scoresRecord[gameData->numPlayers].nScore) > 0 &&
+           fscanf(inPtr, "%s", gameData->scoresRecord[gameData->numPlayers].sLevel) > 0)
+    {
+    }
+}
+
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+    @param key: the string that will be searched for in the array
+    @param mode: 0 - for searching phrases in the phraseRecords, 1 - for searching names in the scoresRecord
+    @return returns the index of the matched string, else returns -1
+*/
+int StringInArray(struct dataTag *gameData, Str20 key, int mode)
+{
+    int i;
+    if (mode == 0) // for searching string in the phraseRecords
+    {
+        for (i = 0; i < gameData->currId; i++)
+        {
+            if (strcmp(key, gameData->phraseRecords[i].sPhrase) == 0)
+                return i;
+        }
+    }
+    else if (mode == 0) // for searching names in the scoresRecords
+    {
+        for (i = 0; i < gameData->numPlayers; i++)
+        {
+            if (strcmp(key, gameData->scoresRecord[i].sPlayer) == 0)
+                return i;
+        }
+    }
+
+    return -1; // if there is no match
+}
