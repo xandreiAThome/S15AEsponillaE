@@ -10,7 +10,6 @@ otherwise plagiarized the work of other students and/or persons.
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
-// #include <windows.h>
 
 #include "TypingGame.h"
 #include "GeneralFunc.c"
@@ -39,6 +38,7 @@ int main()
     InitializeEmptyRecord(&gameData);
     gameData.currId = 0;     // set current index of first empty index of phraseRecords array
     gameData.numPlayers = 0; // set the number of players that played the game to initially zero;
+    ImportScores(&gameData);
     system("cls");
     MainMenu(&gameData);
 
@@ -194,9 +194,14 @@ void AddRecord(struct dataTag *gameData)
     int i, nDup = 0, nPhraseLen;
     DisplayAsciiArt("StylisticTexts/addRecord.txt");
 
-    printf("Add a new phrase: ");
+    printf("Enter r to go back to Menu\nAdd a new phrase: ");
     fflush(stdin);
     scanf("%100[^\n]%*c", sNewPhrase); // ask for input
+    if (strcmp(sNewPhrase, "r") == 0)
+    {
+        ManageDataMenu(gameData);
+        return;
+    }
 
     for (i = 0; i < 100 && !nDup; i++) // checks in the array of the data if the phrase already exists
     {
@@ -424,7 +429,7 @@ void ImportData(struct dataTag *gameData)
         {
             gameData->phraseRecords[gameData->currId].nId = initCurrId + tempId - dupPhrase;
             // add the initial currId to the id of the phrase so that the id still corresponds to their index in the array
-            // minus the number of dupPhrases so that the id of the phrases doesnt skip a number
+            // subtract the number of dupPhrases so that the id of the phrases doesnt skip a number
             gameData->phraseRecords[gameData->currId].nNumOfChars = tempNumChars;
             strcpy(gameData->phraseRecords[gameData->currId].sLevel, tempLevel);
             strcpy(gameData->phraseRecords[gameData->currId].sPhrase, tempPhrase);
@@ -433,7 +438,7 @@ void ImportData(struct dataTag *gameData)
         }
         else
         {
-            dupPhrase++; // increment the dupPhrase so that the Id of the phrases are still in order
+            dupPhrase++; // increment the dupPhrase if the phrase is a duplicate, so that the Id of the phrases are still in order
         }
     }
 
@@ -450,13 +455,25 @@ void ExportData(struct dataTag *gameData)
 
     system("cls");
     DisplayAsciiArt("StylisticTexts/exportData.txt");
-    printf("Enter Filename: ");
+    printf("Enter r to go back to Menu\nEnter Filename: ");
 
     scanf("%30s", fileName);
+    if (strcmp(fileName, "r") == 0)
+    {
+        ManageDataMenu(gameData);
+        return;
+    }
+
     while (strcmp(&fileName[strlen(fileName) - 4], ".txt") != 0)
     {
         printf("Invalid filename try again: "); // continue prompting if the file extension is not .txt
         scanf("%30s", fileName);
+
+        if (strcmp(fileName, "r") == 0) // go back to menu
+        {
+            ManageDataMenu(gameData);
+            return;
+        }
     }
     outPtr = fopen(fileName, "w");
 
@@ -503,7 +520,7 @@ void ViewScores(struct dataTag *gameData)
 {
     int i, longestName = 0, nLen;
     DisplayAsciiArt("StylisticTexts/viewScores.txt");
-    char *labelRow = "Score\t\tPlayer Name"; // row for the labels
+    char *labelRow = "Total Score\tEasy\t\tMedium\t\tHard\t\tPlayer Name"; // row for the labels
 
     for (i = 0; i < gameData->numPlayers; i++)
     {
@@ -511,7 +528,7 @@ void ViewScores(struct dataTag *gameData)
             longestName = strlen(gameData->scoresRecord->sPlayer); // get the longest player name in the game data
     }
 
-    nLen = strlen(labelRow) + abs(strlen("Player Name") - longestName); // get the lenght of the label row
+    nLen = strlen(labelRow) * 2 + abs(strlen("Player Name") - longestName); // get the lenght of the label row
 
     for (i = 0; i < nLen; i++) // printf "=" equal to the length of the string for the label row and the phrase
         printf("=");
@@ -522,6 +539,9 @@ void ViewScores(struct dataTag *gameData)
 
     for (i = 0; i < gameData->numPlayers; i++) // print the scores of each players in the game data
     {
-        printf("%d\t\t%s", gameData->scoresRecord[i].nScore, gameData->scoresRecord[i].sPlayer);
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%s\n",
+               gameData->scoresRecord[i].easyScore + gameData->scoresRecord[i].mediumScore + gameData->scoresRecord[i].hardScore,
+               gameData->scoresRecord[i].easyScore, gameData->scoresRecord[i].mediumScore,
+               gameData->scoresRecord[i].hardScore, gameData->scoresRecord[i].sPlayer);
     }
 }

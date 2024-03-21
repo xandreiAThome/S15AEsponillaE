@@ -135,10 +135,14 @@ void ImportScores(struct dataTag *gameData)
         return;
 
     while (fscanf(inPtr, "%s", gameData->scoresRecord[gameData->numPlayers].sPlayer) > 0 &&
-           fscanf(inPtr, "%d", &gameData->scoresRecord[gameData->numPlayers].nScore) > 0 &&
-           fscanf(inPtr, "%s", gameData->scoresRecord[gameData->numPlayers].sLevel) > 0)
+           fscanf(inPtr, "%d", &gameData->scoresRecord[gameData->numPlayers].easyScore) > 0 &&
+           fscanf(inPtr, "%d", &gameData->scoresRecord[gameData->numPlayers].mediumScore) > 0 &&
+           fscanf(inPtr, "%d", &gameData->scoresRecord[gameData->numPlayers].hardScore) > 0)
     {
+        gameData->numPlayers++; // increase the num of players recorded to have scores
     }
+
+    fclose(inPtr);
 }
 
 /*
