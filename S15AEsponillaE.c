@@ -10,15 +10,17 @@ otherwise plagiarized the work of other students and/or persons.
 #include <string.h>
 #include <stdlib.h>
 #include <conio.h>
+#include <time.h>
 
 #include "TypingGame.h"
 #include "GeneralFunc.c"
 
 // TODO
-// TEST DELETE RECORDS FOR BUGS
-// COMPLETE VIEWSCORES FUNC
 // COMPLETE PLAY LOOP
+
+// Tentatively Ok for now
 // Check if there are multiple preexisting phrases in the game data and you import same phrases if the id is still consistent
+// TEST DELETE RECORDS FOR BUGS
 
 void ManageDataLogin(struct dataTag *gameData);
 void PlayMenu(struct dataTag *gameData);
@@ -34,10 +36,10 @@ void ViewScores(struct dataTag *gameData);
 
 int main()
 {
+    srand(time(NULL));
     struct dataTag gameData;
-    InitializeEmptyRecord(&gameData);
-    gameData.currId = 0;     // set current index of first empty index of phraseRecords array
-    gameData.numPlayers = 0; // set the number of players that played the game to initially zero;
+    gameData.currId = 0;     // init
+    gameData.numPlayers = 0; // init
     ImportScores(&gameData);
     system("cls");
     MainMenu(&gameData);
@@ -76,7 +78,7 @@ void ManageDataLogin(struct dataTag *gameData)
     int i = 0, nAttempts = 2, bGoToMenu = 0, nContinue = 1;
     char ch;
     DisplayAsciiArt("StylisticTexts/manageData.txt");
-    printf("Enter password: ");
+    printf("Press ESC to return to Menu\nEnter password: ");
     while (nContinue)
     {
 
@@ -191,44 +193,55 @@ void ManageDataMenu(struct dataTag *gameData)
 void AddRecord(struct dataTag *gameData)
 {
     Str100 sNewPhrase;
-    int i, nDup = 0, nPhraseLen;
+    int index, nDup = 0, nPhraseLen;
     DisplayAsciiArt("StylisticTexts/addRecord.txt");
+
+    if (gameData->currId >= MAX_RECORDS)
+    {
+        system("cls");
+        printf("Records Array is Full\n");
+        ManageDataMenu(gameData);
+    }
 
     printf("Enter r to go back to Menu\nAdd a new phrase: ");
     fflush(stdin);
     scanf("%100[^\n]%*c", sNewPhrase); // ask for input
     if (strcmp(sNewPhrase, "r") == 0)
     {
+        system("cls");
         ManageDataMenu(gameData);
         return;
     }
 
-    for (i = 0; i < 100 && !nDup; i++) // checks in the array of the data if the phrase already exists
+    index = StringInArray(gameData, sNewPhrase, 0);
+    if (index > -1) // checks if the phrase already exists
     {
-        if (strcmp(sNewPhrase, gameData->phraseRecords[i].sPhrase) == 0)
-        {
-            nDup = 1; // change to true if it phrase is found
-        }
+        nDup = 1;
     }
     nPhraseLen = strlen(sNewPhrase);
-    i--; // decrement i so that the current index of the matching phrase is correct
 
     while (nDup) // if phrase already exists then show the entry and reprompt
     {
         printf("Phrase already exists\n");
-        DisplayTable(gameData, i);
+        DisplayTable(gameData, index);
         printf("\nAdd a new phrase: ");
         fflush(stdin);
         scanf("%100[^\n]%*c", sNewPhrase); // ask for input
         nDup = 0;                          // assume that the new input will not be a duplicate
 
-        for (i = 0; i < 100 && !nDup; i++) // checks in the array of the data if the phrase already exists
+        if (strcmp(sNewPhrase, "r") == 0 && strlen(sNewPhrase) == 1)
         {
-            if (strcmp(sNewPhrase, gameData->phraseRecords[i].sPhrase) == 0)
-                nDup = 1; // change to true if phrase is found
+            system("cls");
+            ManageDataMenu(gameData);
+            return;
+        }
+
+        index = StringInArray(gameData, sNewPhrase, 0);
+        if (index > -1) // checks if the phrase already exists
+        {
+            nDup = 1;
         }
         nPhraseLen = strlen(sNewPhrase);
-        i--; // decrement i so that the current index of the matching phrase is correct
     }
 
     gameData->phraseRecords[gameData->currId].nId = gameData->currId;
@@ -256,7 +269,7 @@ void AddRecord(struct dataTag *gameData)
 void EditRecord(struct dataTag *gameData)
 {
     int nChose = -1;
-    int i, nDup = 0, nPhraseLen;
+    int index, nDup = 0, nPhraseLen;
     char goToMenu;
     Str100 sNewPhrase;
 
@@ -290,22 +303,18 @@ void EditRecord(struct dataTag *gameData)
     fflush(stdin);
     scanf("%100[^\n]%*c", sNewPhrase); // ask for phrase input
 
-    for (i = 0; i < 100 && !nDup; i++) // checks in the array of the data if the phrase already exists
+    index = StringInArray(gameData, sNewPhrase, 0); // checks if the phrase already exists
+    if (index > -1)
     {
-        if (strcmp(sNewPhrase, gameData->phraseRecords[i].sPhrase) == 0)
-        {
-            nDup = 1; // change to true if it phrase is found
-        }
+        nDup = 1; // there is a duplicate phrase
     }
     nPhraseLen = strlen(sNewPhrase);
-    i--; // decrement i so that the current index of the matching phrase is correct
 
     if (nDup) // if it exists then show the entry
     {
         system("cls");
-        printf("Phrase already exists\n\n");
-        printf("Id: %d\nLevel: %s\nCharacter count: %d\nPhrase: %s\n\n", gameData->phraseRecords[i].nId,
-               gameData->phraseRecords[i].sLevel, gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
+        printf("Phrase already exists\n");
+        DisplayTable(gameData, index);
         EditRecord(gameData); // reprompt by calling editrecord again
         return;
     }
@@ -368,20 +377,24 @@ void DeleteRecord(struct dataTag *gameData)
 
         if (i > nChose)
         {
-            tempRecords[i - 1] = gameData->phraseRecords[i]; // while decrementing all the other elements ahead of the chosen phrase in the array
-            tempRecords[i - 1].nId--;
+            tempRecords[i - 1] = gameData->phraseRecords[i]; // place the phrases ahead the chosen phrase on the previous index
+            tempRecords[i - 1].nId--;                        // decrementing the id of the elements ahead of the chosen phrase in the array
         }
         else if (i < nChose)
         {
             tempRecords[i] = gameData->phraseRecords[i]; // phrases before the to be deleted phrase will be just copied
         }
     }
-    gameData->currId--; // decrement the current empty index
 
-    InitializeEmptyRecord(gameData); // empty game data records to remove garbage value
+    gameData->currId--; // decrement the current empty index
 
     for (i = 0; i < gameData->currId; i++)
         gameData->phraseRecords[i] = tempRecords[i]; // transfer contents from tempRecords to game data
+
+    gameData->phraseRecords[gameData->currId].nId = 0;
+    gameData->phraseRecords[gameData->currId].nNumOfChars = 0;
+    strcpy(gameData->phraseRecords[gameData->currId].sLevel, "");
+    strcpy(gameData->phraseRecords[gameData->currId].sPhrase, ""); // empty the currId because of a duplicate record while copying from the tempRecords
 
     system("cls");
     printf("Succesfully Deleted Phrase\n");
@@ -402,6 +415,7 @@ void ImportData(struct dataTag *gameData)
     scanf("%30s", fileName);
     if (strcmp(fileName, "r") == 0) // if r is entered then go back to menu
     {
+        system("cls");
         ManageDataMenu(gameData);
         return;
     }
@@ -413,6 +427,7 @@ void ImportData(struct dataTag *gameData)
         scanf("%30s", fileName);
         if (strcmp(fileName, "r") == 0) // if r is entered then go back to menu
         {
+            system("cls");
             ManageDataMenu(gameData);
             return;
         }
@@ -425,6 +440,13 @@ void ImportData(struct dataTag *gameData)
            fscanf(inPtr, "%d", &tempNumChars) > 0 &&
            fscanf(inPtr, "%*c%[^\n]", tempPhrase) > 0)
     {
+        if (gameData->currId >= MAX_RECORDS)
+        {
+            fclose(inPtr);
+            system("cls");
+            printf("File Partially Imported, Records array is full\n"); // go back to menu
+            ManageDataMenu(gameData);
+        }
         if (StringInArray(gameData, tempPhrase, 0) == -1) // if the phrase still doesnt exist in the game data
         {
             gameData->phraseRecords[gameData->currId].nId = initCurrId + tempId - dupPhrase;
@@ -442,8 +464,9 @@ void ImportData(struct dataTag *gameData)
         }
     }
 
+    fclose(inPtr);
     system("cls");
-    printf("File Imported Succesfully"); // go back to menu
+    printf("File Imported Succesfully\n"); // go back to menu
     ManageDataMenu(gameData);
 }
 
@@ -460,6 +483,7 @@ void ExportData(struct dataTag *gameData)
     scanf("%30s", fileName);
     if (strcmp(fileName, "r") == 0)
     {
+        system("cls");
         ManageDataMenu(gameData);
         return;
     }
@@ -471,6 +495,7 @@ void ExportData(struct dataTag *gameData)
 
         if (strcmp(fileName, "r") == 0) // go back to menu
         {
+            system("cls");
             ManageDataMenu(gameData);
             return;
         }
@@ -483,8 +508,10 @@ void ExportData(struct dataTag *gameData)
                 gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
         fflush(outPtr);
     }
-    printf("Succesfully Exported\n");
+
     fclose(outPtr);
+    system("cls");
+    printf("Succesfully Exported\n");
     ManageDataMenu(gameData);
 }
 
@@ -513,12 +540,80 @@ void PlayMenu(struct dataTag *gameData)
 
 void Play(struct dataTag *gameData)
 {
+    int easyNum = 0, mediumNum = 0, hardNum = 0, i, randNum, life = 3, score = 0;
+    int easyArr[MAX_RECORDS], mediumArr[MAX_RECORDS], hardArr[MAX_RECORDS];
+    Str100 tempPhrase, ans;
+
     DisplayAsciiArt("StylisticTexts/title.txt");
+    for (i = 0; i < gameData->currId; i++)
+    {
+        if (strcmp(gameData->phraseRecords[i].sLevel, "easy") == 0)
+        {
+            easyArr[easyNum] = i; // asign the index of the easy phrase to the array
+            easyNum++;            // keep track of the number of easy phrases
+        }
+        else if (strcmp(gameData->phraseRecords[i].sLevel, "medium") == 0)
+        {
+            mediumArr[mediumNum] = i;
+            mediumNum++;
+        }
+        else
+        {
+            hardArr[hardNum] = i;
+            hardNum++;
+        }
+    }
+
+    for (i = 0; i < 3; i++) // easy phase of the game
+    {
+        randNum = randInRange(0, easyNum - 1);                                 // generate a random index
+        strcpy(tempPhrase, gameData->phraseRecords[easyArr[randNum]].sPhrase); // get that easy phrase in the easyArr and copy to temp
+        printf("Easy Level\nLives: %d\n", life);
+
+        removeElemArray(easyArr, randNum, easyNum); // remove the index if it was already showed
+        easyNum--;                                  // decrement the number of available easy indices
+
+        printf("%s\n", tempPhrase);
+        fflush(stdin);
+        scanf("%100[^\n]%*c", ans);
+        if (strcmp(ans, "r") == 0) // return to menu
+        {
+            system("cls");
+            PlayMenu(gameData);
+            return;
+        }
+
+        if (strcmp(tempPhrase, ans) == 0) // if phrased is typed correctly
+        {
+            system("cls");
+            DisplayAsciiArt("StylisticTexts/title.txt");
+            printf("Typed Succesfully\n");
+            score++;
+        }
+        else
+        {
+            system("cls");
+            DisplayAsciiArt("StylisticTexts/title.txt");
+            printf("Typed Incorrectly\n");
+            life--;
+        }
+
+        if (life == 0)
+        {
+            system("cls");
+            printf("Game Over\n");
+            PlayMenu(gameData);
+            return;
+        }
+    }
+    system("cls");
+    PlayMenu(gameData);
 }
 
 void ViewScores(struct dataTag *gameData)
 {
     int i, longestName = 0, nLen;
+    char c;
     DisplayAsciiArt("StylisticTexts/viewScores.txt");
     char *labelRow = "Total Score\tEasy\t\tMedium\t\tHard\t\tPlayer Name"; // row for the labels
 
@@ -543,5 +638,17 @@ void ViewScores(struct dataTag *gameData)
                gameData->scoresRecord[i].easyScore + gameData->scoresRecord[i].mediumScore + gameData->scoresRecord[i].hardScore,
                gameData->scoresRecord[i].easyScore, gameData->scoresRecord[i].mediumScore,
                gameData->scoresRecord[i].hardScore, gameData->scoresRecord[i].sPlayer);
+    }
+    do
+    {
+        printf("Enter r to return to Menu: ");
+        fflush(stdin); // flush to avoid double scanf
+        scanf("%c", &c);
+    } while (c != 'r');
+
+    if (c == 'r')
+    {
+        system("cls");
+        PlayMenu(gameData);
     }
 }

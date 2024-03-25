@@ -56,23 +56,6 @@ int DisplayOptions(Str20 sOptions[], int size)
 }
 
 /*
-Precondition for positive integers only
-@param n: the integer that will be measured
-@return returns the number of digits in the integer
-*/
-int NumLen(int n)
-{
-    int nLen = 0;
-    while (n > 0) // cut off one digit from the left and increment nLen as long as n is still greater than zero
-    {
-        n /= 10;
-        nLen++;
-    }
-
-    return nLen;
-}
-
-/*
     @param *gameData: the pointer variable for the gamedata structure in main
     @param nIndex: input a negative if you want to print the whole array, otherwise input the index of the record to print
 */
@@ -107,21 +90,6 @@ void DisplayTable(struct dataTag *gameData, int nIndex)
         // print only the specified record
         printf("%d\t\t%s\t\t%d\t\t\t%s\n", gameData->phraseRecords[nIndex].nId, gameData->phraseRecords[nIndex].sLevel,
                gameData->phraseRecords[nIndex].nNumOfChars, gameData->phraseRecords[nIndex].sPhrase);
-}
-
-/*
-    @param *gameData: the pointer variable for the gamedata structure in main
-*/
-void InitializeEmptyRecord(struct dataTag *gameData)
-{
-    int i;
-    for (i = 0; i < MAX_RECORDS; i++)
-    {
-        gameData->phraseRecords[i].nId = -1; // initialize all values of the elements to -1 regardless of the data type
-        gameData->phraseRecords[i].nNumOfChars = -1;
-        strcpy(gameData->phraseRecords[i].sLevel, "-1");
-        strcpy(gameData->phraseRecords[i].sPhrase, "-1");
-    }
 }
 
 /*
@@ -173,3 +141,50 @@ int StringInArray(struct dataTag *gameData, Str20 key, int mode)
 
     return -1; // if there is no match
 }
+
+/*
+    Precondition: non negative parameters
+    @param nMin: the minimum number that can be generated
+    @param nMax: the maximum number that can be generated
+    @return random number between min and max
+*/
+int randInRange(int nMin, int nMax)
+{
+    return rand() % (nMax + 1 - nMin) + nMin; // returns random numbers between and or the min and max values themselves
+}
+
+/*
+    @param arr: the array to be modified
+    @param key: the index of the element to be removed
+    @param size: the size of the array
+*/
+void removeElemArray(int arr[], int key, int size)
+{
+    int temp[size], i;
+
+    for (i = 0; i < size; i++) // copy the contents of arr to temp except the element to be removed
+    {
+        if (i > key)
+        {
+            temp[i - 1] = arr[i];
+        }
+        else if (i < key)
+        {
+            temp[i] = arr[i];
+        }
+    }
+    for (i = 0; i < size - 1; i++) // copy back to the original arr
+    {
+        arr[i] = temp[i];
+    }
+    arr[size - 1] = 0; // empty the last index of the arr
+}
+
+// void displayData(struct dataTag *gameData)
+// {
+//     int i;
+//     for (i = 0; i < 7; i++) // print each of the records
+//         printf("%d\t\t%s\t\t%d\t\t\t%s\n", gameData->phraseRecords[i].nId, gameData->phraseRecords[i].sLevel,
+//                gameData->phraseRecords[i].nNumOfChars, gameData->phraseRecords[i].sPhrase);
+//     printf("\n");
+// }
