@@ -19,7 +19,7 @@ struct recordsTag
 struct scoresTag
 {
 
-    Str20 sPlayer;
+    Str10 sPlayer;
     int easyScore;
     int mediumScore;
     int hardScore;

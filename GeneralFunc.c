@@ -204,9 +204,31 @@ void removeElemArray(int arr[], int key, int size)
 
 /*
     Sorts the scores array from highest to lowest
+    @param *gameData: the pointer variable for the gamedata structure in main
 */
 void SortScores(struct dataTag *gameData)
 {
+    struct scoresTag tempScore;
+    int i, j, maxIndex;
+
+    for (i = 0; i < gameData->numPlayers - 1; i++)
+    {
+        maxIndex = i;
+        for (j = i; j < gameData->numPlayers; j++)
+        {
+            // if the current j index is greater than the max index, then make j the max index
+            if (gameData->scoresRecord[j].easyScore + gameData->scoresRecord[j].mediumScore + gameData->scoresRecord[j].hardScore >
+                gameData->scoresRecord[maxIndex].easyScore + gameData->scoresRecord[maxIndex].mediumScore + gameData->scoresRecord[maxIndex].hardScore)
+                maxIndex = j;
+        }
+        if (maxIndex != i)
+        {
+            // swap the max index and i
+            tempScore = gameData->scoresRecord[maxIndex];
+            gameData->scoresRecord[maxIndex] = gameData->scoresRecord[i];
+            gameData->scoresRecord[i] = tempScore;
+        }
+    }
 }
 
 // void displayData(struct dataTag *gameData)

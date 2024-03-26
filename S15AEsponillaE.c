@@ -18,7 +18,6 @@ otherwise plagiarized the work of other students and/or persons.
 // TODO
 
 // Tentatively Ok for now
-// Check if there are multiple preexisting phrases in the game data and you import same phrases if the id is still consistent
 // TEST DELETE RECORDS FOR BUGS
 
 void ManageDataLogin(struct dataTag *gameData);
@@ -571,18 +570,21 @@ void Play(struct dataTag *gameData)
         system("cls");
         printf("Insufficient Easy Phrases, Go to Manage Data Menu to add more Phrases\n");
         PlayMenu(gameData);
+        return;
     }
     else if (medPhr < 2)
     {
         system("cls");
         printf("Insufficient Medium Phrases, Go to Manage Data Menu to add more Phrases\n");
         PlayMenu(gameData);
+        return;
     }
     else if (hardPhr == 0)
     {
         system("cls");
         printf("Insufficient Hard Phrases, Go to Manage Data Menu to add more Phrases\n");
         PlayMenu(gameData);
+        return;
     }
 
     DisplayAsciiArt("StylisticTexts/title.txt");
@@ -701,12 +703,13 @@ void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score)
     {
         randNum = randInRange(0, nQuanti - 1);                                 // generate a random index
         strcpy(tempPhrase, gameData->phraseRecords[tempArr[randNum]].sPhrase); // get that easy phrase in the easyArr and copy to temp
-        printf("%s Level\nLives: %d\n", sLevel, *life);
+        printf("%s Level\t\t\t\tEnter r to abort game and return to menu\nLives: %d\n\n", sLevel, *life);
 
         removeElemArray(tempArr, randNum, nQuanti); // remove the index if it was already showed
         nQuanti--;                                  // decrement the number of available easy indices
 
-        printf("%s\n", tempPhrase);
+        printf("Phrase: %s\n", tempPhrase);
+
         fflush(stdin);
         scanf("%100[^\n]%*c", sAns);
         if (strcmp(sAns, "r") == 0) // return to menu
@@ -749,10 +752,11 @@ void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score)
 */
 void ViewScores(struct dataTag *gameData)
 {
-    int i, longestName = 0, nLen;
+    int i, longestName = 0;
     char c;
     DisplayAsciiArt("StylisticTexts/viewScores.txt");
-    char *labelRow = "Total Score\tEasy\t\tMedium\t\tHard\t\tPlayer Name"; // row for the labels
+    SortScores(gameData);
+    char *labelRow = "Total Score\tEasy\t\tMedium\t\tHard\t\tPlayer Name\tRank"; // row for the labels
 
     for (i = 0; i < gameData->numPlayers; i++)
     {
@@ -760,21 +764,19 @@ void ViewScores(struct dataTag *gameData)
             longestName = strlen(gameData->scoresRecord->sPlayer); // get the longest player name in the game data
     }
 
-    nLen = strlen(labelRow) * 2 + abs(strlen("Player Name") - longestName); // get the lenght of the label row
-
-    for (i = 0; i < nLen; i++) // printf "=" equal to the length of the string for the label row and the phrase
+    for (i = 0; i < strlen(labelRow) * 2; i++) // printf "=" equal to the length of the string for the label row and the phrase
         printf("=");
     printf("\n%s\n", labelRow); // print the label row and the border
-    for (i = 0; i < nLen; i++)
+    for (i = 0; i < strlen(labelRow) * 2; i++)
         printf("=");
     printf("\n");
 
     for (i = 0; i < gameData->numPlayers; i++) // print the scores of each players in the game data
     {
-        printf("%d\t\t%d\t\t%d\t\t%d\t\t%s\n",
+        printf("%d\t\t%d\t\t%d\t\t%d\t\t%s\t\t%d\n",
                gameData->scoresRecord[i].easyScore + gameData->scoresRecord[i].mediumScore + gameData->scoresRecord[i].hardScore,
                gameData->scoresRecord[i].easyScore, gameData->scoresRecord[i].mediumScore,
-               gameData->scoresRecord[i].hardScore, gameData->scoresRecord[i].sPlayer);
+               gameData->scoresRecord[i].hardScore, gameData->scoresRecord[i].sPlayer, i + 1);
     }
     do
     {
