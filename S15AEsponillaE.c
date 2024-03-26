@@ -16,7 +16,6 @@ otherwise plagiarized the work of other students and/or persons.
 #include "GeneralFunc.c"
 
 // TODO
-// COMPLETE PLAY LOOP
 
 // Tentatively Ok for now
 // Check if there are multiple preexisting phrases in the game data and you import same phrases if the id is still consistent
@@ -32,6 +31,7 @@ void DeleteRecord(struct dataTag *gameData);
 void ImportData(struct dataTag *gameData);
 void ExportData(struct dataTag *gameData);
 void Play(struct dataTag *gameData);
+void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score);
 void ViewScores(struct dataTag *gameData);
 
 int main()
@@ -43,10 +43,13 @@ int main()
     ImportScores(&gameData);
     system("cls");
     MainMenu(&gameData);
-
+    ExportScores(&gameData);
     return 0;
 }
 
+/*
+    Display Function Only
+*/
 void MainMenu(struct dataTag *gameData)
 {
     DisplayAsciiArt("StylisticTexts/mainMenu.txt");
@@ -147,6 +150,9 @@ void ManageDataLogin(struct dataTag *gameData)
     }
 }
 
+/*
+    Display Function Only
+*/
 void ManageDataMenu(struct dataTag *gameData)
 {
     DisplayAsciiArt("StylisticTexts/manageData.txt");
@@ -515,6 +521,9 @@ void ExportData(struct dataTag *gameData)
     ManageDataMenu(gameData);
 }
 
+/*
+    Display Function Only
+*/
 void PlayMenu(struct dataTag *gameData)
 {
     Str20 options[3] = {"Play Game", "View Scores", "Return to Main Menu"};
@@ -540,76 +549,204 @@ void PlayMenu(struct dataTag *gameData)
 
 void Play(struct dataTag *gameData)
 {
-    int easyNum = 0, mediumNum = 0, hardNum = 0, i, randNum, life = 3, score = 0;
-    int easyArr[MAX_RECORDS], mediumArr[MAX_RECORDS], hardArr[MAX_RECORDS];
-    Str100 tempPhrase, ans;
+    int life = 3, easyScore = 0, mediumScore = 0, hardScore = 0, i, indexPlayer = -1;
+    int easyPhr = 0, medPhr = 0, hardPhr = 0;
+    char opt;
+    Str20 playerName;
+    Str10 easy = "easy",
+          mid = "medium", hard = "hard";
 
-    DisplayAsciiArt("StylisticTexts/title.txt");
-    for (i = 0; i < gameData->currId; i++)
+    for (i = 0; i < gameData->currId; i++) // checks if there is enough phrases in the records
     {
         if (strcmp(gameData->phraseRecords[i].sLevel, "easy") == 0)
-        {
-            easyArr[easyNum] = i; // asign the index of the easy phrase to the array
-            easyNum++;            // keep track of the number of easy phrases
-        }
+            easyPhr++;
         else if (strcmp(gameData->phraseRecords[i].sLevel, "medium") == 0)
-        {
-            mediumArr[mediumNum] = i;
-            mediumNum++;
-        }
+            medPhr++;
         else
+            hardPhr++;
+    }
+
+    if (easyPhr < 3) // goes back to menu if there isnt enough phrases
+    {
+        system("cls");
+        printf("Insufficient Easy Phrases, Go to Manage Data Menu to add more Phrases\n");
+        PlayMenu(gameData);
+    }
+    else if (medPhr < 2)
+    {
+        system("cls");
+        printf("Insufficient Medium Phrases, Go to Manage Data Menu to add more Phrases\n");
+        PlayMenu(gameData);
+    }
+    else if (hardPhr == 0)
+    {
+        system("cls");
+        printf("Insufficient Hard Phrases, Go to Manage Data Menu to add more Phrases\n");
+        PlayMenu(gameData);
+    }
+
+    DisplayAsciiArt("StylisticTexts/title.txt");
+    printf("Enter name: "); // get player name
+    fflush(stdin);
+    scanf("%100[^\n]%*c", playerName);
+    if (opt == 'r' || opt == 'R') // if the char is r then return to menu
+    {
+        system("cls");
+        PlayMenu(gameData);
+        return;
+    }
+
+    for (i = 0; i < gameData->numPlayers && indexPlayer == -1; i++) // checks if the player already has a record in the scores
+    {
+        if (strcmp(playerName, gameData->scoresRecord[i].sPlayer) == 0)
+            indexPlayer = i; // get their index in the array
+    }
+    if (indexPlayer == -1 && gameData->numPlayers < MAX_RECORDS) // if not then add the name of the player to the scores list
+    {
+        strcpy(gameData->scoresRecord[gameData->numPlayers].sPlayer, playerName); // intialize the players score
+        gameData->scoresRecord[gameData->numPlayers].easyScore = 0;
+        gameData->scoresRecord[gameData->numPlayers].mediumScore = 0;
+        gameData->scoresRecord[gameData->numPlayers].hardScore = 0;
+        indexPlayer = gameData->numPlayers; // get the index in the array
+        gameData->numPlayers++;             // increment the next available empty index in the scores list
+    }
+    else
+    {
+        printf("ERROR, Player List is full");
+    }
+
+    system("cls");
+    DisplayAsciiArt("StylisticTexts/title.txt");
+
+    PlayLoop(gameData, easy, &life, &easyScore);
+    PlayLoop(gameData, mid, &life, &mediumScore);
+    PlayLoop(gameData, hard, &life, &hardScore);
+
+    system("cls");
+    DisplayAsciiArt("StylisticTexts/title.txt");
+
+    if (life > 0)
+        printf("Game Over, No more phrases to show\n");
+    else
+        printf("Game Over, No more lives\n");
+
+    if (gameData->scoresRecord[indexPlayer].easyScore + gameData->scoresRecord[indexPlayer].mediumScore + gameData->scoresRecord[indexPlayer].hardScore <
+        easyScore + mediumScore + hardScore)
+    {
+        gameData->scoresRecord[indexPlayer].easyScore = easyScore;
+        gameData->scoresRecord[indexPlayer].mediumScore = mediumScore;
+        gameData->scoresRecord[indexPlayer].hardScore = hardScore;
+        printf("New Personal Best!\n");
+    }
+
+    printf("Score: %d\n", easyScore + mediumScore + hardScore);
+    printf("Play again? Enter p\nEnter r to return to Menu: ");
+    scanf("%c", &opt);
+
+    if (opt == 'r' || opt == 'R') // if the char is r then return to menu
+    {
+        system("cls");
+        PlayMenu(gameData);
+        return;
+    }
+    else if (opt == 'p' || opt == 'P') // play again
+    {
+        system("cls");
+        Play(gameData);
+    }
+
+    while (opt != 'r' || opt != 'R' || opt != 'P' || opt != 'P') // if invalid option then reprompt again
+    {
+        if (opt == 'r' || opt == 'R') // if the char is r then return to menu
         {
-            hardArr[hardNum] = i;
-            hardNum++;
+            system("cls");
+            PlayMenu(gameData);
+            return;
+        }
+        else if (opt == 'p' || opt == 'P')
+        {
+            system("cls");
+            Play(gameData);
+        }
+    }
+}
+
+void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score)
+{
+    if (*life == 0) // if life is zero dont run
+        return;
+
+    int nQuanti = 0, i, randNum, freq;
+    int tempArr[MAX_RECORDS];
+    Str100 tempPhrase, sAns;
+
+    for (i = 0; i < gameData->currId; i++)
+    {
+        if (strcmp(gameData->phraseRecords[i].sLevel, sLevel) == 0)
+        {
+            tempArr[nQuanti] = i; // asign the index of the chosen phrase difficulty to the to tempArr
+            nQuanti++;            // keep track of the number of chosen phrase difficulty
         }
     }
 
-    for (i = 0; i < 3; i++) // easy phase of the game
-    {
-        randNum = randInRange(0, easyNum - 1);                                 // generate a random index
-        strcpy(tempPhrase, gameData->phraseRecords[easyArr[randNum]].sPhrase); // get that easy phrase in the easyArr and copy to temp
-        printf("Easy Level\nLives: %d\n", life);
+    if (strcmp(sLevel, "easy") == 0) // add score
+        freq = 3;
+    else if (strcmp(sLevel, "medium"))
 
-        removeElemArray(easyArr, randNum, easyNum); // remove the index if it was already showed
-        easyNum--;                                  // decrement the number of available easy indices
+        freq = 2;
+    else
+        freq = nQuanti;
+
+    for (i = 0; i < freq; i++)
+    {
+        randNum = randInRange(0, nQuanti - 1);                                 // generate a random index
+        strcpy(tempPhrase, gameData->phraseRecords[tempArr[randNum]].sPhrase); // get that easy phrase in the easyArr and copy to temp
+        printf("%s Level\nLives: %d\n", sLevel, *life);
+
+        removeElemArray(tempArr, randNum, nQuanti); // remove the index if it was already showed
+        nQuanti--;                                  // decrement the number of available easy indices
 
         printf("%s\n", tempPhrase);
         fflush(stdin);
-        scanf("%100[^\n]%*c", ans);
-        if (strcmp(ans, "r") == 0) // return to menu
+        scanf("%100[^\n]%*c", sAns);
+        if (strcmp(sAns, "r") == 0) // return to menu
         {
             system("cls");
             PlayMenu(gameData);
             return;
         }
 
-        if (strcmp(tempPhrase, ans) == 0) // if phrased is typed correctly
+        if (strcmp(tempPhrase, sAns) == 0) // if phrased is typed correctly
         {
             system("cls");
             DisplayAsciiArt("StylisticTexts/title.txt");
             printf("Typed Succesfully\n");
-            score++;
+            if (strcmp(sLevel, "easy") == 0) // add score
+                *score += 1;
+            else if (strcmp(sLevel, "medium") == 0)
+
+                *score += 2;
+            else
+                *score += 3;
         }
         else
         {
             system("cls");
             DisplayAsciiArt("StylisticTexts/title.txt");
             printf("Typed Incorrectly\n");
-            life--;
+            *life += -1; // decrement life
         }
 
-        if (life == 0)
+        if (*life == 0)
         {
-            system("cls");
-            printf("Game Over\n");
-            PlayMenu(gameData);
-            return;
+            return; // gameover
         }
     }
-    system("cls");
-    PlayMenu(gameData);
 }
 
+/*
+    Display Function Only
+*/
 void ViewScores(struct dataTag *gameData)
 {
     int i, longestName = 0, nLen;

@@ -115,6 +115,27 @@ void ImportScores(struct dataTag *gameData)
 
 /*
     @param *gameData: the pointer variable for the gamedata structure in main
+*/
+void ExportScores(struct dataTag *gameData)
+{
+    FILE *outPtr;
+    int i;
+
+    if ((outPtr = fopen("scores.txt", "w")) == NULL) // if file does not exist terminate function
+        return;
+
+    for (i = 0; i < gameData->numPlayers; i++) // iterate over each of the phrase in the records and print it to the file
+    {
+        fprintf(outPtr, "%s\n%d\n%d\n%d\n\n", gameData->scoresRecord[i].sPlayer, gameData->scoresRecord[i].easyScore,
+                gameData->scoresRecord[i].mediumScore, gameData->scoresRecord[i].hardScore);
+        fflush(outPtr);
+    }
+
+    fclose(outPtr);
+}
+
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
     @param key: the string that will be searched for in the array
     @param mode: 0 - for searching phrases in the phraseRecords, 1 - for searching names in the scoresRecord
     @return returns the index of the matched string, else returns -1
@@ -154,6 +175,7 @@ int randInRange(int nMin, int nMax)
 }
 
 /*
+    Precondition the last element in the array will just be assigned to zero
     @param arr: the array to be modified
     @param key: the index of the element to be removed
     @param size: the size of the array
@@ -178,6 +200,13 @@ void removeElemArray(int arr[], int key, int size)
         arr[i] = temp[i];
     }
     arr[size - 1] = 0; // empty the last index of the arr
+}
+
+/*
+    Sorts the scores array from highest to lowest
+*/
+void SortScores(struct dataTag *gameData)
+{
 }
 
 // void displayData(struct dataTag *gameData)
