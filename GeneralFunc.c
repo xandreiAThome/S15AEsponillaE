@@ -3,7 +3,8 @@
 #include <math.h>
 
 /*
-@param filename: The name of the textFile that contains the ascii art
+    Display Function Only
+    @param filename: The name of the textFile that contains the ascii art
 */
 void DisplayAsciiArt(char fileName[])
 {
@@ -25,9 +26,9 @@ void DisplayAsciiArt(char fileName[])
 }
 
 /*
-@param sOptions: the array of strings of the available options
-@param size: the size of the array
-@return returns the index that was chosen
+    @param sOptions: the array of strings of the available options
+    @param size: the size of the array
+    @return returns the index that was chosen
 */
 int DisplayOptions(Str20 sOptions[], int size)
 {
@@ -56,6 +57,7 @@ int DisplayOptions(Str20 sOptions[], int size)
 }
 
 /*
+    Display Function Only
     @param *gameData: the pointer variable for the gamedata structure in main
     @param nIndex: input a negative if you want to print the whole array, otherwise input the index of the record to print
 */

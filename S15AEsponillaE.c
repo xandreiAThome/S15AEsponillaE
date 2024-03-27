@@ -16,6 +16,7 @@ otherwise plagiarized the work of other students and/or persons.
 #include "GeneralFunc.c"
 
 // TODO
+// MAKE TEST CASES AND REVIEW EACH FUNCTION
 
 // Tentatively Ok for now
 // TEST DELETE RECORDS FOR BUGS
@@ -30,7 +31,7 @@ void DeleteRecord(struct dataTag *gameData);
 void ImportData(struct dataTag *gameData);
 void ExportData(struct dataTag *gameData);
 void Play(struct dataTag *gameData);
-void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score);
+void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex, struct scoresTag *tempScore);
 void ViewScores(struct dataTag *gameData);
 
 int main()
@@ -74,6 +75,9 @@ void MainMenu(struct dataTag *gameData)
     }
 }
 
+/*
+    Display Function Only
+*/
 void ManageDataLogin(struct dataTag *gameData)
 {
     Str10 password;
@@ -210,8 +214,8 @@ void AddRecord(struct dataTag *gameData)
 
     printf("Enter r to go back to Menu\nAdd a new phrase: ");
     fflush(stdin);
-    scanf("%100[^\n]%*c", sNewPhrase); // ask for input
-    if (strcmp(sNewPhrase, "r") == 0)
+    scanf("%100[^\n]%*c", sNewPhrase);                                // ask for input
+    if (strcmp(sNewPhrase, "r") == 0 || strcmp(sNewPhrase, "R") == 0) // if the user wants to go back to menu
     {
         system("cls");
         ManageDataMenu(gameData);
@@ -234,7 +238,7 @@ void AddRecord(struct dataTag *gameData)
         scanf("%100[^\n]%*c", sNewPhrase); // ask for input
         nDup = 0;                          // assume that the new input will not be a duplicate
 
-        if (strcmp(sNewPhrase, "r") == 0 && strlen(sNewPhrase) == 1)
+        if (strcmp(sNewPhrase, "r") == 0 || strcmp(sNewPhrase, "R") == 0) // if the user wants to go back to menu
         {
             system("cls");
             ManageDataMenu(gameData);
@@ -418,7 +422,7 @@ void ImportData(struct dataTag *gameData)
     DisplayAsciiArt("StylisticTexts/importData.txt");
     printf("Enter r to go back to Menu\nEnter file name: "); // ask for file name
     scanf("%30s", fileName);
-    if (strcmp(fileName, "r") == 0) // if r is entered then go back to menu
+    if (strcmp(fileName, "r") == 0 || strcmp(fileName, "R") == 0) // if r is entered then go back to menu
     {
         system("cls");
         ManageDataMenu(gameData);
@@ -430,7 +434,7 @@ void ImportData(struct dataTag *gameData)
     {
         printf("File does not exist\nEnter file name: "); // reprompt if file does not exist
         scanf("%30s", fileName);
-        if (strcmp(fileName, "r") == 0) // if r is entered then go back to menu
+        if (strcmp(fileName, "r") == 0 || strcmp(fileName, "R") == 0) // if r is entered then go back to menu
         {
             system("cls");
             ManageDataMenu(gameData);
@@ -486,7 +490,7 @@ void ExportData(struct dataTag *gameData)
     printf("Enter r to go back to Menu\nEnter Filename: ");
 
     scanf("%30s", fileName);
-    if (strcmp(fileName, "r") == 0)
+    if (strcmp(fileName, "r") == 0 || strcmp(fileName, "R") == 0)
     {
         system("cls");
         ManageDataMenu(gameData);
@@ -498,7 +502,7 @@ void ExportData(struct dataTag *gameData)
         printf("Invalid filename try again: "); // continue prompting if the file extension is not .txt
         scanf("%30s", fileName);
 
-        if (strcmp(fileName, "r") == 0) // go back to menu
+        if (strcmp(fileName, "r") == 0 || strcmp(fileName, "R") == 0) // go back to menu
         {
             system("cls");
             ManageDataMenu(gameData);
@@ -548,12 +552,11 @@ void PlayMenu(struct dataTag *gameData)
 
 void Play(struct dataTag *gameData)
 {
-    int life = 3, easyScore = 0, mediumScore = 0, hardScore = 0, i, indexPlayer = -1;
+    int life = 3, i, indexPlayer = -1;
     int easyPhr = 0, medPhr = 0, hardPhr = 0;
     char opt;
+    struct scoresTag tempScore;
     Str20 playerName;
-    Str10 easy = "easy",
-          mid = "medium", hard = "hard";
 
     for (i = 0; i < gameData->currId; i++) // checks if there is enough phrases in the records
     {
@@ -616,15 +619,18 @@ void Play(struct dataTag *gameData)
     {
         printf("ERROR, Player List is full");
     }
+    strcpy(tempScore.sPlayer, gameData->scoresRecord[indexPlayer].sPlayer); // init the player name to tempScore
+    tempScore.easyScore = 0;                                                // init the score to zero
+    tempScore.mediumScore = 0;
+    tempScore.hardScore = 0;
 
     system("cls");
     DisplayAsciiArt("StylisticTexts/title.txt");
 
-    PlayLoop(gameData, easy, &life, &easyScore);
-    PlayLoop(gameData, mid, &life, &mediumScore);
-    PlayLoop(gameData, hard, &life, &hardScore);
+    PlayLoop(gameData, "easy", &life, indexPlayer, &tempScore); // play loop for each of the level
+    PlayLoop(gameData, "medium", &life, indexPlayer, &tempScore);
+    PlayLoop(gameData, "hard", &life, indexPlayer, &tempScore);
 
-    system("cls");
     DisplayAsciiArt("StylisticTexts/title.txt");
 
     if (life > 0)
@@ -632,16 +638,15 @@ void Play(struct dataTag *gameData)
     else
         printf("Game Over, No more lives\n");
 
-    if (gameData->scoresRecord[indexPlayer].easyScore + gameData->scoresRecord[indexPlayer].mediumScore + gameData->scoresRecord[indexPlayer].hardScore <
-        easyScore + mediumScore + hardScore)
-    {
-        gameData->scoresRecord[indexPlayer].easyScore = easyScore;
-        gameData->scoresRecord[indexPlayer].mediumScore = mediumScore;
-        gameData->scoresRecord[indexPlayer].hardScore = hardScore;
+    if (gameData->scoresRecord[indexPlayer].easyScore +
+            gameData->scoresRecord[indexPlayer].mediumScore + gameData->scoresRecord[indexPlayer].hardScore <
+        tempScore.easyScore + tempScore.mediumScore + tempScore.hardScore) // if their score for this game is greater than
+    {                                                                      // their previous best
+        gameData->scoresRecord[indexPlayer] = tempScore;                   // replace their previous best with the current score
         printf("New Personal Best!\n");
     }
 
-    printf("Score: %d\n", easyScore + mediumScore + hardScore);
+    printf("Score: %d\n", tempScore.easyScore + tempScore.mediumScore + tempScore.hardScore);
     printf("Play again? Enter p\nEnter r to return to Menu: ");
     scanf("%c", &opt);
 
@@ -655,6 +660,7 @@ void Play(struct dataTag *gameData)
     {
         system("cls");
         Play(gameData);
+        return;
     }
 
     while (opt != 'r' || opt != 'R' || opt != 'P' || opt != 'P') // if invalid option then reprompt again
@@ -669,11 +675,12 @@ void Play(struct dataTag *gameData)
         {
             system("cls");
             Play(gameData);
+            return;
         }
     }
 }
 
-void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score)
+void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex, struct scoresTag *tempScore)
 {
     if (*life == 0) // if life is zero dont run
         return;
@@ -691,8 +698,8 @@ void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score)
         }
     }
 
-    if (strcmp(sLevel, "easy") == 0) // add score
-        freq = 3;
+    if (strcmp(sLevel, "easy") == 0) // checks what the current level for the stage is
+        freq = 3;                    // changes the amount of times the phrases are generated
     else if (strcmp(sLevel, "medium"))
 
         freq = 2;
@@ -701,6 +708,10 @@ void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score)
 
     for (i = 0; i < freq; i++)
     {
+        printf("User: %s\t\t\t\tScore: %d\n", tempScore->sPlayer,
+               tempScore->easyScore +
+                   tempScore->mediumScore + tempScore->hardScore);
+
         randNum = randInRange(0, nQuanti - 1);                                 // generate a random index
         strcpy(tempPhrase, gameData->phraseRecords[tempArr[randNum]].sPhrase); // get that easy phrase in the easyArr and copy to temp
         printf("%s Level\t\t\t\tEnter r to abort game and return to menu\nLives: %d\n\n", sLevel, *life);
@@ -712,7 +723,7 @@ void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score)
 
         fflush(stdin);
         scanf("%100[^\n]%*c", sAns);
-        if (strcmp(sAns, "r") == 0) // return to menu
+        if (strcmp(sAns, "r") == 0 || strcmp(sAns, "R") == 0) // return to menu
         {
             system("cls");
             PlayMenu(gameData);
@@ -721,20 +732,19 @@ void PlayLoop(struct dataTag *gameData, Str10 sLevel, int *life, int *score)
 
         if (strcmp(tempPhrase, sAns) == 0) // if phrased is typed correctly
         {
-            system("cls");
             DisplayAsciiArt("StylisticTexts/title.txt");
             printf("Typed Succesfully\n");
+
             if (strcmp(sLevel, "easy") == 0) // add score
-                *score += 1;
+                tempScore->easyScore++;
             else if (strcmp(sLevel, "medium") == 0)
 
-                *score += 2;
+                tempScore->mediumScore += 2;
             else
-                *score += 3;
+                tempScore->hardScore += 3;
         }
         else
         {
-            system("cls");
             DisplayAsciiArt("StylisticTexts/title.txt");
             printf("Typed Incorrectly\n");
             *life += -1; // decrement life
