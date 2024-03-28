@@ -208,7 +208,7 @@ void ManageDataMenu(struct dataTag *gameData)
 */
 void AddRecord(struct dataTag *gameData)
 {
-    Str100 sNewPhrase;
+    Str100 sNewPhrase = "";
     int index, nDup = 0, nPhraseLen;
     DisplayAsciiArt("StylisticTexts/addRecord.txt");
 
@@ -236,10 +236,16 @@ void AddRecord(struct dataTag *gameData)
     }
     nPhraseLen = strlen(sNewPhrase);
 
-    while (nDup) // if phrase already exists then show the entry and reprompt
+    while (nDup || nPhraseLen == 0) // if phrase already exists then show the entry and reprompt
     {
-        printf("Phrase already exists\n");
-        DisplayTable(gameData, index);
+        if (nPhraseLen == 0)
+            printf("Phrase should be more than 1 character\n");
+        else
+        {
+            printf("Phrase already exists\n");
+            DisplayTable(gameData, index);
+        }
+
         printf("\nAdd a new phrase: ");
         fseek(stdin, 0, SEEK_END);
         scanf("%100[^\n]%*c", sNewPhrase); // ask for input
@@ -263,11 +269,11 @@ void AddRecord(struct dataTag *gameData)
     gameData->phraseRecords[gameData->currId].nId = gameData->currId;
     gameData->phraseRecords[gameData->currId].nNumOfChars = nPhraseLen;
     strcpy(gameData->phraseRecords[gameData->currId].sPhrase, sNewPhrase);
-    if (nPhraseLen <= 33)
+    if (nPhraseLen > 0 && nPhraseLen <= 20)
     {
         strcpy(gameData->phraseRecords[gameData->currId].sLevel, "easy"); // if num of char is less than or equal to 33 then level is easy
     }
-    else if (nPhraseLen < 66)
+    else if (nPhraseLen > 20 && nPhraseLen <= 50)
     {
         strcpy(gameData->phraseRecords[gameData->currId].sLevel, "medium"); // if num of char is less than 66 then level is medium
     }
@@ -289,9 +295,9 @@ void AddRecord(struct dataTag *gameData)
 void EditRecord(struct dataTag *gameData)
 {
     int nChose = -1;
-    int index, nDup = 0, nPhraseLen;
+    int index, nDup = 0, nPhraseLen = 0;
     char goToMenu;
-    Str100 sNewPhrase;
+    Str100 sNewPhrase = ""; // initialize to empty string to avoid error when  editing a phrase and input an empty phrase
 
     DisplayAsciiArt("StylisticTexts/editRecord.txt");
     DisplayTable(gameData, -1);
@@ -322,13 +328,22 @@ void EditRecord(struct dataTag *gameData)
     printf("Edit Phrase: ");
     fseek(stdin, 0, SEEK_END);
     scanf("%100[^\n]%*c", sNewPhrase); // ask for phrase input
+    nPhraseLen = strlen(sNewPhrase);
+    printf("%dloo", nPhraseLen);
+
+    while (nPhraseLen == 0)
+    {
+        fseek(stdin, 0, SEEK_END);
+        printf("Phrase cannot be empty\nEdit Phrase: ");
+        scanf("%100[^\n]%*c", sNewPhrase); // ask for phrase input
+        nPhraseLen = strlen(sNewPhrase);
+    }
 
     index = StringInArray(gameData, sNewPhrase, 0); // checks if the phrase already exists
     if (index > -1)
     {
         nDup = 1; // there is a duplicate phrase
     }
-    nPhraseLen = strlen(sNewPhrase);
 
     if (nDup) // if it exists then show the entry
     {
@@ -342,11 +357,11 @@ void EditRecord(struct dataTag *gameData)
     {
         gameData->phraseRecords[nChose].nNumOfChars = nPhraseLen;
         strcpy(gameData->phraseRecords[nChose].sPhrase, sNewPhrase);
-        if (nPhraseLen <= 33)
+        if (nPhraseLen > 0 && nPhraseLen <= 20)
         {
             strcpy(gameData->phraseRecords[nChose].sLevel, "easy"); // if num of char is less than or equal to 33 then level is easy
         }
-        else if (nPhraseLen < 66)
+        else if (nPhraseLen > 20 && nPhraseLen <= 50)
         {
             strcpy(gameData->phraseRecords[nChose].sLevel, "medium"); // if num of char is less than 66 then level is medium
         }
@@ -369,7 +384,7 @@ void DeleteRecord(struct dataTag *gameData)
 {
     int nChose = -1, i;
     struct recordsTag tempRecords[MAX_RECORDS];
-    char goToMenu;
+    char goToMenu, confirm;
     DisplayAsciiArt("StylisticTexts/deleteRecord.txt");
     DisplayTable(gameData, -1);
 
@@ -394,6 +409,18 @@ void DeleteRecord(struct dataTag *gameData)
             ManageDataMenu(gameData);
             return;
         }
+    }
+
+    fseek(stdin, 0, SEEK_END);
+    printf("Proceed to delete?\nEnter y/n to continue: "); // seek confirmation for deletion
+    scanf("%c", &confirm);
+
+    if (confirm != 'y')
+    {
+
+        system("cls");
+        printf("Canceled deletion\n");
+        DeleteRecord(gameData);
     }
 
     for (i = 0; i < gameData->currId; i++) // add all the phrase into a temp array except the chosen phrase to be deleted
@@ -717,10 +744,10 @@ void Play(struct dataTag *gameData)
 */
 void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex, struct scoresTag *tempScore)
 {
-    if (*life == 0) // if life is zero dont run
+    if (*life <= 0) // if life is zero dont run
         return;
 
-    int nQuanti = 0, i, randNum, freq;
+    int nQuanti = 0, i, j, randNum, freq, incorrect = 0;
     int tempArr[MAX_RECORDS];
     Str100 tempPhrase, sAns;
 
@@ -735,7 +762,7 @@ void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex
 
     if (strcmp(sLevel, "easy") == 0) // checks what the current level for the stage is
         freq = 3;                    // changes the amount of times the phrases are generated
-    else if (strcmp(sLevel, "medium"))
+    else if (strcmp(sLevel, "medium") == 0)
 
         freq = 2;
     else
@@ -743,6 +770,7 @@ void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex
 
     for (i = 0; i < freq; i++)
     {
+        incorrect = 0; // reset the incorrect number of chars that was typed
         printf("User: %s\t\t\t\tScore: %d\n", tempScore->sPlayer,
                tempScore->easyScore +
                    tempScore->mediumScore + tempScore->hardScore);
@@ -780,12 +808,20 @@ void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex
         }
         else
         {
+            for (j = 0; j < strlen(sAns); j++)
+            {
+                if (sAns[j] != tempPhrase[j])
+                    incorrect++; // compare each char between the phrase and the answer
+            }
+            if (strlen(sAns) < strlen(tempPhrase))              // if answer is shorther than the phrase
+                incorrect += strlen(tempPhrase) - strlen(sAns); // then their difference should be added to the incorrect characters
+
             DisplayAsciiArt("StylisticTexts/title.txt");
             printf("Typed Incorrectly\n");
-            *life += -1; // decrement life
+            *life -= incorrect; // decrement life
         }
 
-        if (*life == 0)
+        if (*life <= 0)
         {
             return; // gameover
         }
