@@ -97,12 +97,15 @@ void DisplayTable(struct dataTag *gameData, int nIndex)
 /*
     @param *gameData: the pointer variable for the gamedata structure in main
 */
-void ImportScores(struct dataTag *gameData)
+void ImportScores(struct dataTag *gameData, char *fileName)
 {
     FILE *inPtr;
 
-    if ((inPtr = fopen("scores.txt", "r")) == NULL) // if file does not exist terminate function
+    if ((inPtr = fopen(fileName, "r")) == NULL) // if file does not exist terminate function
+    {
+        printf("Scores File Does not exist");
         return;
+    }
 
     while (fscanf(inPtr, "%s", gameData->scoresRecord[gameData->numPlayers].sPlayer) > 0 &&
            fscanf(inPtr, "%d", &gameData->scoresRecord[gameData->numPlayers].easyScore) > 0 &&
@@ -118,13 +121,12 @@ void ImportScores(struct dataTag *gameData)
 /*
     @param *gameData: the pointer variable for the gamedata structure in main
 */
-void ExportScores(struct dataTag *gameData)
+void ExportScores(struct dataTag *gameData, char *fileName)
 {
     FILE *outPtr;
     int i;
 
-    if ((outPtr = fopen("scores.txt", "w")) == NULL) // if file does not exist terminate function
-        return;
+    outPtr = fopen(fileName, "w");
 
     for (i = 0; i < gameData->numPlayers; i++) // iterate over each of the phrase in the records and print it to the file
     {

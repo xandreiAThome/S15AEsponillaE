@@ -40,10 +40,10 @@ int main()
     struct dataTag gameData;
     gameData.currId = 0;     // init
     gameData.numPlayers = 0; // init
-    ImportScores(&gameData);
+    ImportScores(&gameData, "scores.txt");
     system("cls");
     MainMenu(&gameData);
-    ExportScores(&gameData);
+    ExportScores(&gameData, "scores.txt");
     return 0;
 }
 
@@ -213,7 +213,7 @@ void AddRecord(struct dataTag *gameData)
     }
 
     printf("Enter r to go back to Menu\nAdd a new phrase: ");
-    fflush(stdin);
+    fseek(stdin, 0, SEEK_END);
     scanf("%100[^\n]%*c", sNewPhrase);                                // ask for input
     if (strcmp(sNewPhrase, "r") == 0 || strcmp(sNewPhrase, "R") == 0) // if the user wants to go back to menu
     {
@@ -234,7 +234,7 @@ void AddRecord(struct dataTag *gameData)
         printf("Phrase already exists\n");
         DisplayTable(gameData, index);
         printf("\nAdd a new phrase: ");
-        fflush(stdin);
+        fseek(stdin, 0, SEEK_END);
         scanf("%100[^\n]%*c", sNewPhrase); // ask for input
         nDup = 0;                          // assume that the new input will not be a duplicate
 
@@ -309,7 +309,7 @@ void EditRecord(struct dataTag *gameData)
 
     printf("\nPhrase: %s\n", gameData->phraseRecords[nChose].sPhrase);
     printf("Edit Phrase: ");
-    fflush(stdin);
+    fseek(stdin, 0, SEEK_END);
     scanf("%100[^\n]%*c", sNewPhrase); // ask for phrase input
 
     index = StringInArray(gameData, sNewPhrase, 0); // checks if the phrase already exists
@@ -592,7 +592,7 @@ void Play(struct dataTag *gameData)
 
     DisplayAsciiArt("StylisticTexts/title.txt");
     printf("Enter name: "); // get player name
-    fflush(stdin);
+    fseek(stdin, 0, SEEK_END);
     scanf("%100[^\n]%*c", playerName);
     if (opt == 'r' || opt == 'R') // if the char is r then return to menu
     {
@@ -721,7 +721,7 @@ void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex
 
         printf("Phrase: %s\n", tempPhrase);
 
-        fflush(stdin);
+        fseek(stdin, 0, SEEK_END);
         scanf("%100[^\n]%*c", sAns);
         if (strcmp(sAns, "r") == 0 || strcmp(sAns, "R") == 0) // return to menu
         {
@@ -791,7 +791,7 @@ void ViewScores(struct dataTag *gameData)
     do
     {
         printf("Enter r to return to Menu: ");
-        fflush(stdin); // flush to avoid double scanf
+        fseek(stdin, 0, SEEK_END); // flush to avoid double scanf
         scanf("%c", &c);
     } while (c != 'r');
 
