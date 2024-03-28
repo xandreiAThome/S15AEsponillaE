@@ -49,6 +49,7 @@ int main()
 
 /*
     Display Function Only
+    @param *gameData: the pointer variable for the gamedata structure in main
 */
 void MainMenu(struct dataTag *gameData)
 {
@@ -77,6 +78,7 @@ void MainMenu(struct dataTag *gameData)
 
 /*
     Display Function Only
+    @param *gameData: the pointer variable for the gamedata structure in main
 */
 void ManageDataLogin(struct dataTag *gameData)
 {
@@ -155,6 +157,7 @@ void ManageDataLogin(struct dataTag *gameData)
 
 /*
     Display Function Only
+    @param *gameData: the pointer variable for the gamedata structure in main
 */
 void ManageDataMenu(struct dataTag *gameData)
 {
@@ -199,13 +202,17 @@ void ManageDataMenu(struct dataTag *gameData)
     }
 }
 
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+    Appends a phrase to the phraseRecord Array
+*/
 void AddRecord(struct dataTag *gameData)
 {
     Str100 sNewPhrase;
     int index, nDup = 0, nPhraseLen;
     DisplayAsciiArt("StylisticTexts/addRecord.txt");
 
-    if (gameData->currId >= MAX_RECORDS)
+    if (gameData->currId >= MAX_RECORDS) // checks if the phraseRecords array is full
     {
         system("cls");
         printf("Records Array is Full\n");
@@ -275,6 +282,10 @@ void AddRecord(struct dataTag *gameData)
     ManageDataMenu(gameData);
 }
 
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+    Edits the content of a phrase in the phraseRecords array
+*/
 void EditRecord(struct dataTag *gameData)
 {
     int nChose = -1;
@@ -350,6 +361,10 @@ void EditRecord(struct dataTag *gameData)
     }
 }
 
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+    Deletes a chosen phrase from the phraseRecords Array
+*/
 void DeleteRecord(struct dataTag *gameData)
 {
     int nChose = -1, i;
@@ -403,7 +418,7 @@ void DeleteRecord(struct dataTag *gameData)
     gameData->phraseRecords[gameData->currId].nId = 0;
     gameData->phraseRecords[gameData->currId].nNumOfChars = 0;
     strcpy(gameData->phraseRecords[gameData->currId].sLevel, "");
-    strcpy(gameData->phraseRecords[gameData->currId].sPhrase, ""); // empty the currId because of a duplicate record while copying from the tempRecords
+    strcpy(gameData->phraseRecords[gameData->currId].sPhrase, ""); // empty the currId to empty redundant data record while copying from the tempRecords
 
     system("cls");
     printf("Succesfully Deleted Phrase\n");
@@ -411,6 +426,10 @@ void DeleteRecord(struct dataTag *gameData)
     return;
 }
 
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+    Imports a text file into the phraseRecords array
+*/
 void ImportData(struct dataTag *gameData)
 {
     Str30 fileName;
@@ -479,6 +498,10 @@ void ImportData(struct dataTag *gameData)
     ManageDataMenu(gameData);
 }
 
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+    Exports the contents of the phraseRecords array into a text file
+*/
 void ExportData(struct dataTag *gameData)
 {
     Str30 fileName;
@@ -550,6 +573,10 @@ void PlayMenu(struct dataTag *gameData)
     return;
 }
 
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+    The main function for the game logic
+*/
 void Play(struct dataTag *gameData)
 {
     int life = 3, i, indexPlayer = -1;
@@ -680,6 +707,14 @@ void Play(struct dataTag *gameData)
     }
 }
 
+/*
+    @param *gameData: the pointer variable for the gamedata structure in main
+    @param *sLevel: the current difficulty of the stage
+    @param *life: the remaining life of the player
+    @param playerIndex: the index of the current player in the scoresRecord array
+    @param *tempScore: the temporary score struct to store the score of the player in the current game
+    The function for the game loop, ie: where players are prompted to type the phrases
+*/
 void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex, struct scoresTag *tempScore)
 {
     if (*life == 0) // if life is zero dont run
@@ -759,6 +794,7 @@ void PlayLoop(struct dataTag *gameData, char *sLevel, int *life, int playerIndex
 
 /*
     Display Function Only
+    @param *gameData: the pointer variable for the gamedata structure in main
 */
 void ViewScores(struct dataTag *gameData)
 {
